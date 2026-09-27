@@ -1,0 +1,1604 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "## Rootline Inventory\nRead-only inventory of your Azure estate, powered by Azure Resource Graph. Pick your scope below, then switch tabs. Every grid can be filtered and exported to Excel.\n\n<sub>v1.0.0 · open source (MIT) · [github.com/Mengokai/estate-inventory](https://github.com/Mengokai/estate-inventory) · not affiliated with Microsoft</sub>"
+      },
+      "name": "header"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "b9ed3d30-774b-5f4c-a25e-d4a64527f3b8",
+            "version": "KqlParameterItem/1.0",
+            "name": "Subscription",
+            "label": "Subscriptions",
+            "type": 6,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "includeAll": false,
+              "showDefault": false
+            },
+            "defaultValue": "value::all"
+          },
+          {
+            "id": "ae5fcfaf-a1d6-5c21-a5a0-32513b0bd8d1",
+            "version": "KqlParameterItem/1.0",
+            "name": "ResourceGroup",
+            "label": "Resource groups",
+            "type": 2,
+            "isRequired": true,
+            "query": "resourcecontainers\n| where type =~ 'microsoft.resources/subscriptions/resourcegroups'\n| distinct name\n| order by name asc\n| project value = name, label = name",
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources",
+            "crossComponentResources": [
+              "{Subscription}"
+            ],
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "selectAllValue": "*",
+              "showDefault": false
+            },
+            "defaultValue": "value::all"
+          },
+          {
+            "id": "7e7e4529-0020-5c6d-9fd9-98020f3a670f",
+            "version": "KqlParameterItem/1.0",
+            "name": "Location",
+            "label": "Locations",
+            "type": 2,
+            "isRequired": true,
+            "query": "resources\n| where isnotempty(location)\n| distinct location\n| order by location asc\n| project value = location, label = location",
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources",
+            "crossComponentResources": [
+              "{Subscription}"
+            ],
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "selectAllValue": "*",
+              "showDefault": false
+            },
+            "defaultValue": "value::all"
+          },
+          {
+            "id": "bdba5125-5910-5b25-bd2a-753695a20e07",
+            "version": "KqlParameterItem/1.0",
+            "name": "TagName",
+            "label": "Tag name",
+            "type": 2,
+            "isRequired": false,
+            "query": "resources\n| where isnotempty(tags)\n| mv-expand tags\n| extend k = tostring(bag_keys(tags)[0])\n| where isnotempty(k)\n| distinct k\n| order by k asc\n| project value = k, label = k",
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources",
+            "crossComponentResources": [
+              "{Subscription}"
+            ],
+            "typeSettings": {
+              "showDefault": false
+            }
+          },
+          {
+            "id": "fcec9066-4e5a-5e5e-bc2b-4b4c643f24f1",
+            "version": "KqlParameterItem/1.0",
+            "name": "TagValue",
+            "label": "Tag value",
+            "type": 2,
+            "isRequired": false,
+            "query": "resources\n| where isnotempty('{TagName}')\n| extend v = tostring(tags['{TagName}'])\n| where isnotempty(v)\n| distinct v\n| order by v asc\n| project value = v, label = v",
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources",
+            "crossComponentResources": [
+              "{Subscription}"
+            ],
+            "typeSettings": {
+              "showDefault": false
+            }
+          }
+        ],
+        "style": "pills",
+        "queryType": 1,
+        "resourceType": "microsoft.resourcegraph/resources",
+        "crossComponentResources": [
+          "{Subscription}"
+        ]
+      },
+      "name": "parameters - scope"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "links": [
+          {
+            "id": "536cc595-fddb-5051-a9af-480a5d994005",
+            "cellValue": "Tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Overview",
+            "subTarget": "overview",
+            "style": "link"
+          },
+          {
+            "id": "db33b4de-5071-5f01-93f2-7ea2d4ac6cdb",
+            "cellValue": "Tab",
+            "linkTarget": "parameter",
+            "linkLabel": "All resources",
+            "subTarget": "resources",
+            "style": "link"
+          },
+          {
+            "id": "d3a32b6f-f7de-5424-9355-82df123f7e43",
+            "cellValue": "Tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Compute",
+            "subTarget": "compute",
+            "style": "link"
+          },
+          {
+            "id": "1f311112-4545-5f45-92da-819f6309d1e6",
+            "cellValue": "Tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Networking",
+            "subTarget": "network",
+            "style": "link"
+          },
+          {
+            "id": "57aac9e9-ef39-5426-a058-32a5708a1c61",
+            "cellValue": "Tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Storage & data",
+            "subTarget": "data",
+            "style": "link"
+          },
+          {
+            "id": "e889aa70-7517-5492-99d5-eba63bc2b35f",
+            "cellValue": "Tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Tags",
+            "subTarget": "tags",
+            "style": "link"
+          },
+          {
+            "id": "c2e69585-b349-5f53-b891-29e99f8663bf",
+            "cellValue": "Tab",
+            "linkTarget": "parameter",
+            "linkLabel": "Subscriptions & RGs",
+            "subTarget": "structure",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "tabs"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| summarize Res = count(), Subs = dcount(subscriptionId), RGs = dcount(tolower(strcat(subscriptionId, '/', resourceGroup))), Types = dcount(type), Locs = dcount(location)\n| extend m = pack_array(pack('Metric', 'Resources', 'Count', Res), pack('Metric', 'Subscriptions', 'Count', Subs), pack('Metric', 'Resource groups', 'Count', RGs), pack('Metric', 'Resource types', 'Count', Types), pack('Metric', 'Locations', 'Count', Locs))\n| mv-expand m\n| project Metric = tostring(m.Metric), Count = tolong(m.Count)",
+              "size": 0,
+              "title": "",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "tiles",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "tileSettings": {
+                "titleContent": {
+                  "columnMatch": "Metric",
+                  "formatter": 1
+                },
+                "leftContent": {
+                  "columnMatch": "Count",
+                  "formatter": 12,
+                  "formatOptions": {
+                    "palette": "auto"
+                  },
+                  "numberFormat": {
+                    "unit": 17,
+                    "options": {
+                      "maximumSignificantDigits": 3
+                    }
+                  }
+                },
+                "showBorder": false
+              }
+            },
+            "name": "ov-tiles"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| summarize Count = count() by type\n| top 10 by Count desc",
+              "size": 0,
+              "title": "Top 10 resource types",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "piechart",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "name": "ov-types",
+            "customWidth": "50"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| summarize Count = count() by location\n| order by Count desc",
+              "size": 0,
+              "title": "Resources by location",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "barchart",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "name": "ov-locations",
+            "customWidth": "50"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| summarize Resources = count(), ResourceGroups = dcount(resourceGroup), Types = dcount(type) by subscriptionId\n| join kind=leftouter (resourcecontainers | where type =~ 'microsoft.resources/subscriptions' | project subscriptionId, Subscription = name) on subscriptionId\n| project Subscription, subscriptionId, Resources, ResourceGroups, Types\n| order by Resources desc",
+              "size": 0,
+              "title": "Resources per subscription",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "^Resources$",
+                    "formatter": 4,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "subscriptionId",
+                    "label": "Subscription ID"
+                  },
+                  {
+                    "columnId": "ResourceGroups",
+                    "label": "Resource groups"
+                  }
+                ]
+              }
+            },
+            "name": "ov-subs",
+            "customWidth": "50"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| summarize Count = count(), Locations = dcount(location) by Type = type\n| order by Count desc",
+              "size": 0,
+              "title": "All resource types",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "^Count$",
+                    "formatter": 4,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true
+              }
+            },
+            "name": "ov-typelist",
+            "customWidth": "50"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "overview"
+      },
+      "name": "group - overview"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 9,
+            "content": {
+              "version": "KqlParameterItem/1.0",
+              "parameters": [
+                {
+                  "id": "11e9d27d-9db5-5357-b250-c8a064b3428c",
+                  "version": "KqlParameterItem/1.0",
+                  "name": "ResourceType",
+                  "label": "Resource types",
+                  "type": 2,
+                  "isRequired": true,
+                  "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| summarize n = count() by type\n| order by type asc\n| project value = type, label = strcat(type, ' (', n, ')')",
+                  "queryType": 1,
+                  "resourceType": "microsoft.resourcegraph/resources",
+                  "crossComponentResources": [
+                    "{Subscription}"
+                  ],
+                  "multiSelect": true,
+                  "quote": "'",
+                  "delimiter": ",",
+                  "typeSettings": {
+                    "additionalResourceOptions": [
+                      "value::all"
+                    ],
+                    "selectAllValue": "*",
+                    "showDefault": false
+                  },
+                  "defaultValue": "value::all"
+                }
+              ],
+              "style": "pills",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "name": "parameters - type"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where '*' in ({ResourceType}) or type in~ ({ResourceType})\n| join kind=leftouter (resourcecontainers | where type =~ 'microsoft.resources/subscriptions' | project subscriptionId, Subscription = name) on subscriptionId\n| project Resource = id, Type = type, ResourceGroup = resourceGroup, Location = location, Subscription, Sku = tostring(sku.name), Kind = kind, Tags = tags\n| order by Type asc",
+              "size": 0,
+              "title": "Resource inventory",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "res-grid"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "resources"
+      },
+      "name": "group - resources"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.compute/virtualmachines'\n| summarize Count = count() by Size = tostring(properties.hardwareProfile.vmSize)\n| top 15 by Count desc",
+              "size": 0,
+              "title": "VMs by size",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "barchart",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "name": "vm-size",
+            "customWidth": "50"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.compute/virtualmachines'\n| summarize Count = count() by State = coalesce(tostring(properties.extended.instanceView.powerState.displayStatus), 'Unknown')",
+              "size": 0,
+              "title": "VMs by power state",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "piechart",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ]
+            },
+            "name": "vm-power",
+            "customWidth": "50"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.compute/virtualmachines'\n| project Resource = id, ComputerName = tostring(properties.osProfile.computerName), Size = tostring(properties.hardwareProfile.vmSize), OS = tostring(properties.storageProfile.osDisk.osType), Image = strcat(tostring(properties.storageProfile.imageReference.offer), ' ', tostring(properties.storageProfile.imageReference.sku)), PowerState = tostring(properties.extended.instanceView.powerState.displayStatus), DataDisks = array_length(properties.storageProfile.dataDisks), NICs = array_length(properties.networkProfile.networkInterfaces), Zones = tostring(zones), Priority = tostring(properties.priority), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Virtual machines",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "ComputerName",
+                    "label": "Computer name"
+                  },
+                  {
+                    "columnId": "PowerState",
+                    "label": "Power state"
+                  },
+                  {
+                    "columnId": "DataDisks",
+                    "label": "Data disks"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "vm-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.compute/virtualmachinescalesets'\n| project Resource = id, Sku = tostring(sku.name), Capacity = toint(sku.capacity), Orchestration = tostring(properties.orchestrationMode), Upgrade = tostring(properties.upgradePolicy.mode), Zones = tostring(zones), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Scale sets",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "Upgrade",
+                    "label": "Upgrade policy"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "vmss-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.compute/disks'\n| extend AttachedTo = tostring(split(managedBy, '/')[8])\n| project Resource = id, State = tostring(properties.diskState), SizeGB = toint(properties.diskSizeGB), Sku = tostring(sku.name), OS = tostring(properties.osType), AttachedTo = iff(isempty(AttachedTo), '(not attached)', AttachedTo), ResourceGroup = resourceGroup, Location = location\n| order by State asc",
+              "size": 0,
+              "title": "Managed disks",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "SizeGB",
+                    "label": "Size (GB)"
+                  },
+                  {
+                    "columnId": "AttachedTo",
+                    "label": "Attached to"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "disk-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.containerservice/managedclusters'\n| project Resource = id, Version = tostring(properties.kubernetesVersion), Tier = tostring(sku.tier), NodePools = array_length(properties.agentPoolProfiles), NetworkPlugin = tostring(properties.networkProfile.networkPlugin), PrivateCluster = tostring(properties.apiServerAccessProfile.enablePrivateCluster), PowerState = tostring(properties.powerState.code), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Kubernetes clusters (AKS)",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "NodePools",
+                    "label": "Node pools"
+                  },
+                  {
+                    "columnId": "NetworkPlugin",
+                    "label": "Network plugin"
+                  },
+                  {
+                    "columnId": "PrivateCluster",
+                    "label": "Private"
+                  },
+                  {
+                    "columnId": "PowerState",
+                    "label": "Power state"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "aks-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.web/serverfarms'\n| project Resource = id, Sku = tostring(sku.name), Tier = tostring(sku.tier), Workers = toint(sku.capacity), Apps = toint(properties.numberOfSites), Kind = kind, ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "App Service plans",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "plan-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.web/sites'\n| project Resource = id, Kind = kind, State = tostring(properties.state), HttpsOnly = tostring(properties.httpsOnly), Host = tostring(properties.defaultHostName), Plan = tostring(split(tostring(properties.serverFarmId), '/')[8]), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Web & function apps",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "HttpsOnly",
+                    "label": "HTTPS only"
+                  },
+                  {
+                    "columnId": "Host",
+                    "label": "Default host"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "app-grid"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "compute"
+      },
+      "name": "group - compute"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.network/virtualnetworks'\n| project Resource = id, AddressSpace = tostring(properties.addressSpace.addressPrefixes), Subnets = array_length(properties.subnets), Peerings = array_length(properties.virtualNetworkPeerings), DnsServers = tostring(properties.dhcpOptions.dnsServers), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Virtual networks",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "AddressSpace",
+                    "label": "Address space"
+                  },
+                  {
+                    "columnId": "DnsServers",
+                    "label": "DNS servers"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "vnet-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.network/virtualnetworks'\n| mv-expand subnet = properties.subnets\n| project VNet = id, Subnet = tostring(subnet.name), Prefix = iff(isnotempty(tostring(subnet.properties.addressPrefix)), tostring(subnet.properties.addressPrefix), tostring(subnet.properties.addressPrefixes)), NSG = tostring(split(tostring(subnet.properties.networkSecurityGroup.id), '/')[8]), RouteTable = tostring(split(tostring(subnet.properties.routeTable.id), '/')[8]), NatGateway = tostring(split(tostring(subnet.properties.natGateway.id), '/')[8]), Delegation = tostring(subnet.properties.delegations[0].properties.serviceName), IpConfigs = array_length(subnet.properties.ipConfigurations)",
+              "size": 0,
+              "title": "Subnets",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "RouteTable",
+                    "label": "Route table"
+                  },
+                  {
+                    "columnId": "NatGateway",
+                    "label": "NAT gateway"
+                  },
+                  {
+                    "columnId": "IpConfigs",
+                    "label": "IP configs"
+                  }
+                ]
+              }
+            },
+            "name": "subnet-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.network/publicipaddresses'\n| extend Owner = tostring(split(tostring(properties.ipConfiguration.id), '/')[8]), Nat = tostring(split(tostring(properties.natGateway.id), '/')[8])\n| project Resource = id, Address = tostring(properties.ipAddress), Sku = tostring(sku.name), Allocation = tostring(properties.publicIPAllocationMethod), AssociatedTo = case(isnotempty(Owner), Owner, isnotempty(Nat), Nat, '(not associated)'), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Public IP addresses",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "AssociatedTo",
+                    "label": "Associated to"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "pip-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.network/networksecuritygroups'\n| project Resource = id, CustomRules = coalesce(array_length(properties.securityRules), 0), Subnets = coalesce(array_length(properties.subnets), 0), NICs = coalesce(array_length(properties.networkInterfaces), 0), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Network security groups",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "CustomRules",
+                    "label": "Custom rules"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "nsg-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.network/privateendpoints'\n| extend conn = iff(array_length(properties.privateLinkServiceConnections) > 0, properties.privateLinkServiceConnections[0], properties.manualPrivateLinkServiceConnections[0])\n| project Resource = id, Target = tostring(split(tostring(conn.properties.privateLinkServiceId), '/')[8]), SubResource = tostring(conn.properties.groupIds[0]), Status = tostring(conn.properties.privateLinkServiceConnectionState.status), VNet = tostring(split(tostring(properties.subnet.id), '/')[8]), Subnet = tostring(split(tostring(properties.subnet.id), '/')[10]), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Private endpoints",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "SubResource",
+                    "label": "Sub-resource"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "pe-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type in~ ('microsoft.network/loadbalancers', 'microsoft.network/applicationgateways', 'microsoft.network/azurefirewalls', 'microsoft.network/virtualnetworkgateways', 'microsoft.network/natgateways', 'microsoft.network/bastionhosts', 'microsoft.network/expressroutecircuits', 'microsoft.network/frontdoors', 'microsoft.cdn/profiles', 'microsoft.network/privatednszones', 'microsoft.network/dnszones')\n| project Resource = id, Type = type, Sku = coalesce(tostring(sku.name), tostring(properties.sku.name)), Tier = coalesce(tostring(sku.tier), tostring(properties.sku.tier)), ResourceGroup = resourceGroup, Location = location\n| order by Type asc",
+              "size": 0,
+              "title": "Gateways, firewalls & load balancers",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "netdev-grid"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "network"
+      },
+      "name": "group - network"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.storage/storageaccounts'\n| project Resource = id, Kind = kind, Sku = tostring(sku.name), AccessTier = tostring(properties.accessTier), MinTls = tostring(properties.minimumTlsVersion), HttpsOnly = tostring(properties.supportsHttpsTrafficOnly), BlobPublicAccess = tostring(properties.allowBlobPublicAccess), PublicNetwork = tostring(properties.publicNetworkAccess), DataLake = tostring(properties.isHnsEnabled), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Storage accounts",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "AccessTier",
+                    "label": "Access tier"
+                  },
+                  {
+                    "columnId": "MinTls",
+                    "label": "Min TLS"
+                  },
+                  {
+                    "columnId": "HttpsOnly",
+                    "label": "HTTPS only"
+                  },
+                  {
+                    "columnId": "BlobPublicAccess",
+                    "label": "Blob public access"
+                  },
+                  {
+                    "columnId": "PublicNetwork",
+                    "label": "Public network"
+                  },
+                  {
+                    "columnId": "DataLake",
+                    "label": "Data Lake (HNS)"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "st-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.keyvault/vaults'\n| project Resource = id, Sku = tostring(properties.sku.name), SoftDelete = tostring(properties.enableSoftDelete), PurgeProtection = tostring(properties.enablePurgeProtection), RbacAuth = tostring(properties.enableRbacAuthorization), PublicNetwork = tostring(properties.publicNetworkAccess), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "Key vaults",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "SoftDelete",
+                    "label": "Soft delete"
+                  },
+                  {
+                    "columnId": "PurgeProtection",
+                    "label": "Purge protection"
+                  },
+                  {
+                    "columnId": "RbacAuth",
+                    "label": "RBAC authorization"
+                  },
+                  {
+                    "columnId": "PublicNetwork",
+                    "label": "Public network"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "kv-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.sql/servers'\n| project Resource = id, Version = tostring(properties.version), MinTls = tostring(properties.minimalTlsVersion), PublicNetwork = tostring(properties.publicNetworkAccess), EntraOnlyAuth = tostring(properties.administrators.azureADOnlyAuthentication), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "SQL servers",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "MinTls",
+                    "label": "Min TLS"
+                  },
+                  {
+                    "columnId": "PublicNetwork",
+                    "label": "Public network"
+                  },
+                  {
+                    "columnId": "EntraOnlyAuth",
+                    "label": "Entra-only auth"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "sqls-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type =~ 'microsoft.sql/servers/databases'\n| where name !~ 'master'\n| project Resource = id, Server = tostring(split(tostring(id), '/')[8]), Sku = tostring(sku.name), Tier = tostring(sku.tier), MaxSizeGB = round(tolong(properties.maxSizeBytes) / 1073741824.0, 1), ZoneRedundant = tostring(properties.zoneRedundant), ResourceGroup = resourceGroup, Location = location",
+              "size": 0,
+              "title": "SQL databases",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "MaxSizeGB",
+                    "label": "Max size (GB)"
+                  },
+                  {
+                    "columnId": "ZoneRedundant",
+                    "label": "Zone redundant"
+                  },
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "sqldb-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where type in~ ('microsoft.documentdb/databaseaccounts', 'microsoft.dbforpostgresql/flexibleservers', 'microsoft.dbformysql/flexibleservers', 'microsoft.sql/managedinstances', 'microsoft.cache/redis', 'microsoft.synapse/workspaces', 'microsoft.datafactory/factories', 'microsoft.databricks/workspaces', 'microsoft.eventhub/namespaces', 'microsoft.servicebus/namespaces', 'microsoft.recoveryservices/vaults', 'microsoft.dataprotection/backupvaults')\n| project Resource = id, Type = type, Sku = coalesce(tostring(sku.name), tostring(properties.sku.name)), Tier = tostring(sku.tier), ResourceGroup = resourceGroup, Location = location\n| order by Type asc",
+              "size": 0,
+              "title": "Other data & messaging services",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "otherdata-grid"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "data"
+      },
+      "name": "group - data"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where isnotempty(tags)\n| mv-expand tags\n| extend TagKey = tostring(bag_keys(tags)[0])\n| where isnotempty(TagKey)\n| extend TagValue = tostring(tags[TagKey])\n| summarize Resources = count(), DistinctValues = dcount(TagValue) by TagKey\n| extend j = 1\n| join kind=inner (resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| summarize Total = count() | extend j = 1) on j\n| project TagKey, Resources, CoveragePct = round(100.0 * Resources / Total, 1), DistinctValues\n| order by Resources desc",
+              "size": 0,
+              "title": "Tag coverage by key",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "^CoveragePct$",
+                    "formatter": 4,
+                    "formatOptions": {
+                      "palette": "green",
+                      "min": 0,
+                      "max": 100
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "TagKey",
+                    "label": "Tag"
+                  },
+                  {
+                    "columnId": "CoveragePct",
+                    "label": "Coverage %"
+                  },
+                  {
+                    "columnId": "DistinctValues",
+                    "label": "Distinct values"
+                  }
+                ]
+              }
+            },
+            "name": "tag-coverage",
+            "customWidth": "50"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where isnotempty(tags)\n| mv-expand tags\n| extend TagKey = tostring(bag_keys(tags)[0])\n| where isnotempty(TagKey)\n| summarize Resources = count() by TagKey, TagValue = tostring(tags[TagKey])\n| order by TagKey asc, Resources desc",
+              "size": 0,
+              "title": "Tag values",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "^Resources$",
+                    "formatter": 4,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "TagKey",
+                    "label": "Tag"
+                  },
+                  {
+                    "columnId": "TagValue",
+                    "label": "Value"
+                  }
+                ]
+              }
+            },
+            "name": "tag-values",
+            "customWidth": "50"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| where isempty(tags) or tostring(tags) == '{}'\n| join kind=leftouter (resourcecontainers | where type =~ 'microsoft.resources/subscriptions' | project subscriptionId, Subscription = name) on subscriptionId\n| project Resource = id, Type = type, ResourceGroup = resourceGroup, Subscription, Location = location\n| order by Type asc",
+              "size": 0,
+              "title": "Resources without any tags",
+              "noDataMessage": "Every resource in scope has at least one tag (or a tag filter is active).",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "ResourceGroup",
+                    "label": "Resource group"
+                  }
+                ]
+              }
+            },
+            "name": "untagged"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "tags"
+      },
+      "name": "group - tags"
+    },
+    {
+      "type": 12,
+      "content": {
+        "version": "NotebookGroup/1.0",
+        "groupType": "editable",
+        "items": [
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resourcecontainers\n| where type =~ 'microsoft.resources/subscriptions'\n| join kind=leftouter (resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| summarize Resources = count() by subscriptionId) on subscriptionId\n| project Subscription = name, subscriptionId, State = tostring(properties.state), ManagementGroup = tostring(properties.managementGroupAncestorsChain[0].displayName), MgDepth = array_length(properties.managementGroupAncestorsChain), OfferType = tostring(properties.subscriptionPolicies.quotaId), Resources = coalesce(Resources, 0)\n| order by Subscription asc",
+              "size": 0,
+              "title": "Subscriptions",
+              "noDataMessage": "No matching resources in the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "^Resources$",
+                    "formatter": 4,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true,
+                "labelSettings": [
+                  {
+                    "columnId": "subscriptionId",
+                    "label": "Subscription ID"
+                  },
+                  {
+                    "columnId": "ManagementGroup",
+                    "label": "Parent management group"
+                  },
+                  {
+                    "columnId": "MgDepth",
+                    "label": "MG depth"
+                  },
+                  {
+                    "columnId": "OfferType",
+                    "label": "Offer (quota ID)"
+                  }
+                ]
+              }
+            },
+            "name": "sub-grid"
+          },
+          {
+            "type": 3,
+            "content": {
+              "version": "KqlItem/1.0",
+              "query": "resourcecontainers\n| where type =~ 'microsoft.resources/subscriptions/resourcegroups'\n| where '*' in ({ResourceGroup}) or name in~ ({ResourceGroup})\n| extend rgKey = tolower(strcat(subscriptionId, '/', name))\n| join kind=leftouter (resources\n| where '*' in ({ResourceGroup}) or resourceGroup in~ ({ResourceGroup})\n| where '*' in ({Location}) or location in~ ({Location})\n| where isempty('{TagName}') or (isnotempty(tostring(tags['{TagName}'])) and (isempty('{TagValue}') or tostring(tags['{TagName}']) =~ '{TagValue}'))\n| summarize Resources = count() by rgKey = tolower(strcat(subscriptionId, '/', resourceGroup))) on rgKey\n| join kind=leftouter (resourcecontainers | where type =~ 'microsoft.resources/subscriptions' | project subscriptionId, Subscription = name) on subscriptionId\n| project Resource = id, Subscription, Location = location, Resources = coalesce(Resources, 0), Tags = tags\n| order by Resources desc",
+              "size": 0,
+              "title": "Resource groups",
+              "noDataMessage": "No resource groups match the selected scope.",
+              "visualization": "table",
+              "queryType": 1,
+              "resourceType": "microsoft.resourcegraph/resources",
+              "crossComponentResources": [
+                "{Subscription}"
+              ],
+              "showExportToExcel": true,
+              "gridSettings": {
+                "formatters": [
+                  {
+                    "columnMatch": "^(Resource|VNet)$",
+                    "formatter": 13,
+                    "formatOptions": {
+                      "linkTarget": null,
+                      "showIcon": true
+                    }
+                  },
+                  {
+                    "columnMatch": "^Resources$",
+                    "formatter": 4,
+                    "formatOptions": {
+                      "palette": "blue"
+                    }
+                  }
+                ],
+                "rowLimit": 10000,
+                "filter": true
+              }
+            },
+            "name": "rg-grid"
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "Tab",
+        "comparison": "isEqualTo",
+        "value": "structure"
+      },
+      "name": "group - structure"
+    }
+  ],
+  "fallbackResourceIds": [
+    "Azure Monitor"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}

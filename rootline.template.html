@@ -1,0 +1,1445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rootline</title>
+<!-- Rootline — part of Rootline Inventory (MIT). Filled in by the Rootline app (live view and saved reports). -->
+<style>
+:root {
+  --bg:#f5f6f8; --panel:#ffffff; --ink:#1b1f24; --mute:#5d6772; --line:#dde2e8; --chip:#eef2f7; --acc:#0a66c2;
+  --c-tenant:#4b3fb5; --c-mg:#7a4fd0; --c-sub:#0a66c2; --c-rg:#3d8bd9; --c-subnet:#8fb3d9;
+  --c-compute:#e07a1f; --c-network:#1f9d74; --c-data:#c2410c; --c-other:#7b8794; --c-edge:#9aa6b2; --c-hl:#e11d48;
+  --c-user:#0f766e; --c-group:#9333ea; --c-sp:#b45309; --c-role:#be123c; --c-priv:#dc2626; --c-pkg:#0e7490;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#101317; --panel:#181d23; --ink:#e7eaee; --mute:#97a1ac; --line:#2a313a; --chip:#1f2731; --acc:#5aa2f0;
+    --c-tenant:#9d93f0; --c-mg:#b18cf0; --c-sub:#5aa2f0; --c-rg:#7ab6f2; --c-subnet:#4e6f93;
+    --c-compute:#f5a25a; --c-network:#4cc9a0; --c-data:#f07b4f; --c-other:#8c97a3; --c-edge:#5b6672; --c-hl:#fb7185;
+    --c-user:#2dd4bf; --c-group:#c084fc; --c-sp:#fbbf24; --c-role:#fb7185; --c-priv:#f87171; --c-pkg:#22d3ee;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#101317; --panel:#181d23; --ink:#e7eaee; --mute:#97a1ac; --line:#2a313a; --chip:#1f2731; --acc:#5aa2f0;
+  --c-tenant:#9d93f0; --c-mg:#b18cf0; --c-sub:#5aa2f0; --c-rg:#7ab6f2; --c-subnet:#4e6f93;
+  --c-compute:#f5a25a; --c-network:#4cc9a0; --c-data:#f07b4f; --c-other:#8c97a3; --c-edge:#5b6672; --c-hl:#fb7185;
+  --c-user:#2dd4bf; --c-group:#c084fc; --c-sp:#fbbf24; --c-role:#fb7185; --c-priv:#f87171; --c-pkg:#22d3ee;
+}
+* { box-sizing:border-box; }
+[hidden] { display:none !important; }
+html, body { height:100%; }
+body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; display:flex; flex-direction:column; }
+header { padding:10px 16px 8px; border-bottom:1px solid var(--line); background:var(--panel); display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; }
+header .t { flex:1 1 260px; min-width:0; }
+header h1 { margin:0; font-size:18px; }
+.meta { color:var(--mute); font-size:12px; margin-top:2px; }
+.appbar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.appbar .who { color:var(--mute); font-size:12px; margin-right:4px; }
+.appbar select { padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); font:inherit; font-size:13px; max-width:220px; }
+.bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px 16px; border-bottom:1px solid var(--line); background:var(--panel); }
+.seg { display:inline-flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+.seg button { border:0; background:none; color:var(--mute); padding:6px 12px; font:inherit; cursor:pointer; }
+.seg button.on { background:var(--acc); color:#fff; }
+.bar input[type=search] { flex:1 1 180px; min-width:140px; padding:6px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); font:inherit; }
+.btn { border:1px solid var(--line); background:var(--bg); color:var(--ink); border-radius:6px; padding:6px 10px; font:inherit; cursor:pointer; }
+.btn:hover { border-color:var(--acc); }
+.btn.primary { background:var(--acc); border-color:var(--acc); color:#fff; }
+.filters { display:flex; flex-wrap:wrap; gap:6px; }
+.filters label { display:inline-flex; align-items:center; gap:5px; font-size:12px; background:var(--chip); border-radius:999px; padding:3px 10px; cursor:pointer; user-select:none; }
+.dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+main { flex:1; display:flex; min-height:0; }
+#cy { flex:1; min-width:0; min-height:360px; }
+aside { width:340px; border-left:1px solid var(--line); background:var(--panel); overflow:auto; padding:14px 16px; }
+aside h2 { font-size:15px; margin:0 0 2px; word-break:break-word; }
+aside .type { color:var(--mute); font-size:12px; word-break:break-all; }
+aside dl { display:grid; grid-template-columns:auto 1fr; gap:3px 10px; margin:10px 0; font-size:13px; }
+aside dt { color:var(--mute); }
+aside dd { margin:0; word-break:break-word; }
+aside h3 { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--mute); margin:16px 0 6px; }
+aside ul { list-style:none; padding:0; margin:0; }
+aside li { padding:5px 0; border-bottom:1px solid var(--line); font-size:13px; }
+aside a { color:var(--acc); cursor:pointer; text-decoration:none; }
+.hint { color:var(--mute); font-size:13px; }
+.rel { color:var(--mute); font-size:11px; display:block; }
+.tag { display:inline-block; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; border-radius:4px; padding:0 5px; margin-left:4px; vertical-align:1px; background:var(--chip); color:var(--mute); }
+.tag.priv { background:var(--c-priv); color:#fff; }
+.path { font-size:12px; color:var(--mute); }
+.chips { display:flex; flex-wrap:wrap; gap:4px; margin:8px 0; }
+.chips button { border:1px solid var(--line); background:var(--bg); color:var(--mute); border-radius:999px; padding:2px 10px; font:inherit; font-size:12px; cursor:pointer; }
+.chips button.on { background:var(--acc); border-color:var(--acc); color:#fff; }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:8px 0; }
+.stats div { background:var(--chip); border-radius:6px; padding:6px 8px; font-size:11px; color:var(--mute); }
+.stats b { display:block; font-size:17px; color:var(--ink); }
+.warn { background:var(--chip); border-left:3px solid var(--c-compute); padding:6px 10px; font-size:12px; margin:0 16px; }
+#overlay { position:fixed; inset:0; background:color-mix(in srgb, var(--bg) 85%, transparent); display:none; align-items:center; justify-content:center; z-index:10; padding:16px; }
+#overlay .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:22px 24px; max-width:460px; width:100%; }
+#overlay h2 { margin:0 0 8px; font-size:18px; }
+.form label { display:block; font-size:13px; margin:10px 0 0; }
+.form input { display:block; width:100%; margin-top:4px; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); font:inherit; }
+.form input:focus { outline:2px solid var(--acc); outline-offset:0; }
+.form details { margin-top:12px; font-size:13px; } .form summary { cursor:pointer; color:var(--acc); }
+.err { background:color-mix(in srgb, var(--c-priv) 14%, transparent); border-left:3px solid var(--c-priv); padding:6px 10px; font-size:13px; }
+.warn-inline { background:var(--chip); border-left:3px solid var(--c-compute); padding:6px 10px; font-size:13px; }
+[data-ext] { color:var(--acc); cursor:pointer; text-decoration:underline; }
+.flash { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:8px 14px; border-radius:6px; font-size:13px; z-index:20; }
+.spin { width:22px; height:22px; border:3px solid var(--line); border-top-color:var(--acc); border-radius:50%; animation:sp 1s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px; }
+@keyframes sp { to { transform:rotate(360deg); } }
+#report { flex:1; overflow:auto; padding:16px; min-width:0; }
+#report .wrap { max-width:1100px; margin:0 auto; }
+#report h2 { font-size:18px; margin:0 0 4px; }
+#report h3 { font-size:13px; margin:18px 0 4px; }
+#report a, .finding a { color:var(--acc); cursor:pointer; text-decoration:none; }
+.sev { display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; border-radius:4px; padding:1px 6px; }
+.sev.high { background:var(--c-priv); color:#fff; } .sev.medium { background:var(--c-compute); color:#fff; }
+.sev.low { background:var(--c-sub); color:#fff; } .sev.info { background:var(--chip); color:var(--mute); }
+.summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px; margin:12px 0; }
+.summary div { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:12px; color:var(--mute); }
+.summary b { display:block; font-size:20px; color:var(--ink); }
+.toolbar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin:8px 0; }
+.toolbar .chips { margin:0; }
+.toolbar select { padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); font:inherit; }
+.finding { background:var(--panel); border:1px solid var(--line); border-radius:8px; margin:8px 0; }
+.finding > summary { padding:10px 14px; cursor:pointer; list-style:none; display:flex; gap:8px; align-items:baseline; }
+.finding > summary::-webkit-details-marker { display:none; }
+.finding > summary .n { margin-left:auto; color:var(--mute); font-size:12px; white-space:nowrap; }
+.finding .body { padding:0 14px 12px; font-size:13px; }
+.finding .body p { margin:6px 0; }
+.finding ul, .changes ul { list-style:none; padding:0; margin:8px 0 0; columns:2 320px; column-gap:24px; }
+.finding li, .changes li { padding:3px 0; break-inside:avoid; font-size:13px; }
+.check { list-style:none; padding:0; margin:6px 0 0; columns:2 280px; }
+.check li { padding:2px 0; font-size:13px; }
+.yes { color:var(--c-network); font-weight:700; } .no { color:var(--c-priv); font-weight:700; }
+.chain { display:block; font-size:11px; color:var(--mute); }
+.chain b { color:var(--ink); font-weight:600; }
+.blast { background:color-mix(in srgb, var(--c-priv) 10%, transparent); border-left:3px solid var(--c-priv); padding:6px 10px; font-size:13px; margin:10px 0; }
+.blast.calm { background:var(--chip); border-left-color:var(--c-network); }
+.plus { color:var(--c-network); font-weight:700; } .minus { color:var(--c-priv); font-weight:700; }
+@media (max-width:760px) {
+  main { flex-direction:column; }
+  aside { width:auto; border-left:0; border-top:1px solid var(--line); max-height:42vh; }
+  #cy { min-height:52vh; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="t"><h1 id="title">Rootline</h1><div class="meta" id="meta"></div></div>
+  <div class="appbar" id="appbar" hidden>
+    <span class="who" id="who"></span>
+    <select id="snap" title="Saved scans"></select>
+    <button class="btn primary" id="scan">Scan now</button>
+    <button class="btn" id="download" title="Save an offline copy of this scan">Save report</button>
+    <button class="btn" id="signout">Sign out</button>
+  </div>
+</header>
+<div class="bar">
+  <div class="seg">
+    <button id="v-mind" class="on">Mind map</button>
+    <button id="v-topo">Topology</button>
+    <button id="v-access">Access</button>
+    <button id="v-find">Findings</button>
+    <button id="v-changes">Changes</button>
+  </div>
+  <div class="seg" id="shape-seg">
+    <button id="s-radial" class="on">Radial</button>
+    <button id="s-tree">Tree</button>
+  </div>
+  <input type="search" id="q" placeholder="Search name, type, IP prefix…">
+  <button class="btn" id="expand">Expand all</button>
+  <button class="btn" id="fit">Fit</button>
+  <button class="btn" id="png">Export PNG</button>
+</div>
+<div class="bar filters" id="filters"></div>
+<div id="warn"></div>
+<main>
+  <div id="cy"></div>
+  <aside id="panel"></aside>
+  <section id="report" hidden></section>
+</main>
+<div id="overlay"><div class="card" id="ocard"></div></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.30.2/cytoscape.min.js"></script>
+<script>
+"use strict";
+const APP = /*__APP__*/null;
+const DATA = /*__DATA__*/null || demoData();
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// ======================================================= model: resources
+const byId = new Map(DATA.nodes.map(n => [n.id, n]));
+const kids = new Map();
+for (const n of DATA.nodes) {
+  if (!n.parent) continue;
+  if (!kids.has(n.parent)) kids.set(n.parent, []);
+  kids.get(n.parent).push(n.id);
+}
+const relEdges = DATA.edges.filter(e => byId.has(e.s) && byId.has(e.t) && e.s !== e.t);
+const HIER = new Set(["tenant", "mg", "sub", "rg"]);
+const CATS = [["compute", "Compute"], ["network", "Network"], ["data", "Data & storage"], ["other", "Other"]];
+const isResource = n => !HIER.has(n.cat) && n.cat !== "subnet" && !n.external;
+const resCount = DATA.nodes.filter(isResource).length;
+const tenantName = DATA.meta.tenantName || (byId.get("tenant") || {}).name || "Tenant";
+
+function ancestors(id) {                    // id, parent, grandparent … up to the tenant root
+  const out = []; let n = byId.get(id), guard = 0;
+  if (!n && id === "tenant") return ["tenant"];
+  while (n && guard++ < 50) { out.push(n.id); n = n.parent ? byId.get(n.parent) : null; }
+  if (out.length && out[out.length - 1] !== "tenant" && byId.has("tenant")) out.push("tenant");
+  return out;
+}
+const reach = new Map();                     // scope id -> resources underneath
+for (const n of DATA.nodes) if (isResource(n)) for (const a of ancestors(n.id).slice(1)) reach.set(a, (reach.get(a) || 0) + 1);
+const scopeName = id => id === "tenant" ? tenantName : (byId.get(id) || {}).name || id.split("/").pop().replace(/^mg:/, "");
+const scopeKind = id => id === "tenant" ? "tenant root" : id.startsWith("mg:") ? "management group" :
+  /^\/subscriptions\/[^/]+$/.test(id) ? "subscription" : /\/resourcegroups\/[^/]+$/.test(id) ? "resource group" : "resource";
+
+// ======================================================= model: access
+const ACC = DATA.access || { principals: [], azure: [], entra: [], members: {}, policies: [], ca: [] };
+const pById = new Map(ACC.principals.map(p => [p.id, p]));
+const memberOf = new Map();                  // principal -> groups it is (transitively) in
+for (const [g, ms] of Object.entries(ACC.members || {})) for (const m of ms || []) {
+  if (!memberOf.has(m)) memberOf.set(m, []); memberOf.get(m).push(g);
+}
+const group = (arr, key) => { const m = new Map(); for (const x of arr) { if (!m.has(x[key])) m.set(x[key], []); m.get(x[key]).push(x); } return m; };
+const azBy = group(ACC.azure, "p"), enBy = group(ACC.entra, "p");
+const PKG = new Map((ACC.packages || []).map(k => [k.id, k]));
+const pkgOfGroup = new Map();                // group -> access packages that grant membership
+for (const k of ACC.packages || []) for (const g of k.groups || []) { if (!pkgOfGroup.has(g)) pkgOfGroup.set(g, []); pkgOfGroup.get(g).push(k.id); }
+const pkgAssignBy = group(ACC.packageAssignments || [], "p"), requestsBy = group(ACC.packageRequests || [], "p");
+const gEligBy = group(ACC.groupEligible || [], "p"), gEligOf = group(ACC.groupEligible || [], "g");   // PIM for Groups
+function effective(pid) {                    // every role: direct, through group membership, or as PIM-eligible group member
+  const mem = memberOf.get(pid) || [];
+  const via = [[pid, null, null], ...mem.map(g => [g, g, null]),
+    ...(gEligBy.get(pid) || []).filter(e => !mem.includes(e.g)).map(e => [e.g, e.g, e])];
+  const az = [], en = [];
+  for (const [h, v, pim] of via) {
+    for (const a of azBy.get(h) || []) az.push(Object.assign({ via: v, pim }, a));
+    for (const a of enBy.get(h) || []) en.push(Object.assign({ via: v, pim }, a));
+  }
+  return { az, en };
+}
+const privCache = new Map();
+const isPriv = pid => {
+  if (!privCache.has(pid)) { const e = effective(pid); privCache.set(pid, e.az.some(a => a.priv) || e.en.some(a => a.priv)); }
+  return privCache.get(pid);
+};
+const jit = a => a.status === "eligible" || !!a.pim;           // needs a PIM activation first
+const SCAN_TIME = new Date(DATA.meta.generated).getTime() || Date.now();
+const fmtDate = s => s ? new Date(s).toLocaleDateString() : "";
+const daysLeft = s => s ? Math.ceil((new Date(s).getTime() - SCAN_TIME) / 864e5) : Infinity;
+const untilTxt = s => s ? ` until ${fmtDate(s)}` : "";
+const MANAGE_ROLES = new Set(["Owner", "User Access Administrator", "Role Based Access Control Administrator"]);
+const roleLevel = r => MANAGE_ROLES.has(r) ? 3 : /(Reader|Viewer)\b/.test(r) && !/Contributor|Administrator|Owner|Operator/.test(r) ? 1 : 2;
+const LEVEL = { 3: "Full control incl. access", 2: "Can change", 1: "Read only" };
+const KIND = { user: "User", group: "Group", sp: "App / service principal", other: "Identity" };
+const pName = id => (pById.get(id) || { name: id }).name;
+const subsUnder = new Map();                 // scope -> subscriptions at or below it
+for (const n of DATA.nodes) if (n.cat === "sub") for (const a of ancestors(n.id)) { if (!subsUnder.has(a)) subsUnder.set(a, new Set()); subsUnder.get(a).add(n.id); }
+const subOf = sc => { const m = /^\/subscriptions\/[^/]+/.exec(sc || ""); return m ? m[0] : null; };
+function pkgsFor(pid, g) {                   // access packages of pid that grant group g
+  return (pkgAssignBy.get(pid) || []).filter(x => (pkgOfGroup.get(g) || []).includes(x.pkg) && PKG.has(x.pkg)).map(x => ({ pkg: PKG.get(x.pkg), until: x.until }));
+}
+function chain(pid, a) {                     // how pid holds role a: access package → group → PIM → role
+  const steps = [];
+  if (a.via) {
+    for (const x of pkgsFor(pid, a.via)) steps.push(`access package <b>${esc(x.pkg.name)}</b>${esc(untilTxt(x.until))}`);
+    steps.push(a.pim ? `eligible member of <b>${esc(pName(a.via))}</b> (PIM for Groups${esc(untilTxt(a.pim.until))})` : `member of <b>${esc(pName(a.via))}</b>`);
+  }
+  steps.push(`<b>${esc(a.role)}</b>${a.status === "eligible" ? ` eligible (PIM${esc(untilTxt(a.until))})` : esc(untilTxt(a.until))}`);
+  return steps.join(" → ");
+}
+function peopleAt(id) {                      // everyone with an Azure role at or above a scope, groups expanded to people
+  const set = new Set(ancestors(id)), people = new Map();
+  const rows = ACC.azure.filter(a => set.has(a.scope));
+  const put = (pid, a, via, pim) => {
+    const e = Object.assign({ via, pim }, a), l = roleLevel(a.role);
+    let x = people.get(pid);
+    if (!x) people.set(pid, x = { pid, paths: [], level: 0, now: 0 });
+    x.paths.push(e); x.level = Math.max(x.level, l); if (!jit(e)) x.now = Math.max(x.now, l);
+  };
+  for (const a of rows) {
+    const p = pById.get(a.p), ms = ACC.members[a.p] || [], el = gEligOf.get(a.p) || [];
+    if (p && p.kind === "group" && (ms.length || el.length)) { for (const m of ms) put(m, a, a.p, null); for (const e of el) put(e.p, a, a.p, e); }
+    else put(a.p, a, null, null);
+  }
+  return { rows, people: [...people.values()] };
+}
+function blast(pid) {                        // what this identity could change if misused: now, and after PIM activation
+  const e = effective(pid);
+  const calc = list => {
+    const sc = [...new Set(list.filter(a => roleLevel(a.role) >= 2).map(a => a.scope))], set = new Set(sc);
+    const top = sc.filter(s => !ancestors(s).slice(1).some(x => set.has(x)));
+    let res = 0; const subs = new Set();
+    for (const s of top) {
+      res += reach.get(s) || (byId.has(s) && isResource(byId.get(s)) ? 1 : 0);
+      for (const x of subsUnder.get(s) || []) subs.add(x);
+      if (subOf(s)) subs.add(subOf(s));
+    }
+    return { res, subs: subs.size, manage: new Set(list.filter(a => roleLevel(a.role) === 3).map(a => a.scope)).size };
+  };
+  return { now: calc(e.az.filter(a => !jit(a))), all: calc(e.az), en: e.en };
+}
+
+// ======================================================= state
+let view = "mind", shape = "radial", selectedP = null, accessFilter = "priv";
+const hiddenCats = new Set(), expanded = new Set(), openSubnets = new Set();
+const AUTO_EXPAND = resCount <= 400;
+
+// ======================================================= header
+$("title").textContent = DATA.meta.empty ? "Rootline" : `Rootline — ${tenantName}`;
+$("meta").textContent = DATA.meta.empty ? "" :
+  `${DATA.meta.demo ? "Demo data · " : ""}Scanned ${new Date(DATA.meta.generated).toLocaleString()} · ${DATA.meta.scope} · ` +
+  `${resCount} resources · ${relEdges.length} connections · ${ACC.principals.length} identities`;
+function updateWarn() {
+  let msg = "";
+  if (view === "mind" && !AUTO_EXPAND) msg = `${resCount} resources: resource groups start collapsed. Click one to open it, or use Expand all.`;
+  if (view === "topo" && topoCompact) msg = `Large estate: the topology starts with the network backbone. Click a subnet to show what's connected to it.`;
+  if (view === "access" && DATA.meta.entra === false) msg = `Entra wasn't read for this scan: identities show as object IDs, group members and directory roles are missing.`;
+  $("warn").innerHTML = msg ? `<p class="warn">${esc(msg)}</p>` : "";
+}
+
+// ======================================================= filters
+for (const [k, label] of CATS) {
+  const l = document.createElement("label");
+  l.innerHTML = `<input type="checkbox" checked data-cat="${k}"><span class="dot" style="background:var(--c-${k})"></span>${label}`;
+  $("filters").appendChild(l);
+}
+$("filters").addEventListener("change", e => {
+  const c = e.target.dataset.cat;
+  e.target.checked ? hiddenCats.delete(c) : hiddenCats.add(c);
+  applyFilters();
+});
+function applyFilters() {
+  if (view === "access") return;
+  cy.nodes().forEach(n => n.style("display", hiddenCats.has(n.data("cat")) ? "none" : "element"));
+}
+
+// ======================================================= style
+function css(v) { return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function buildStyle() {
+  const ink = css("--ink"), bg = css("--bg");
+  const color = c => css("--c-" + c) || css("--c-other");
+  return [
+    { selector: "node", style: {
+        "label": "data(label)", "font-size": 10, "color": ink, "text-valign": "bottom", "text-margin-y": 3,
+        "text-wrap": "ellipsis", "text-max-width": 140, "text-outline-color": bg, "text-outline-width": 2,
+        "width": 16, "height": 16, "background-color": ele => color(ele.data("cat")), "border-width": 0 } },
+    { selector: "node[cat='tenant']", style: { "shape": "star", "width": 34, "height": 34, "font-size": 13, "font-weight": 600 } },
+    { selector: "node[cat='mg']", style: { "shape": "round-hexagon", "width": 28, "height": 28, "font-size": 12 } },
+    { selector: "node[cat='sub']", style: { "shape": "round-rectangle", "width": 30, "height": 22, "font-size": 12, "font-weight": 600 } },
+    { selector: "node[cat='rg']", style: { "shape": "round-rectangle", "width": 22, "height": 16, "font-size": 11 } },
+    { selector: "node[cat='user']", style: { "shape": "ellipse", "width": 22, "height": 22, "font-size": 11 } },
+    { selector: "node[cat='group']", style: { "shape": "round-octagon", "width": 24, "height": 24, "font-size": 11 } },
+    { selector: "node[cat='sp']", style: { "shape": "round-tag", "width": 22, "height": 22, "font-size": 11 } },
+    { selector: "node[cat='role']", style: { "shape": "round-rectangle", "width": 26, "height": 14, "font-size": 11 } },
+    { selector: "node[cat='pkg']", style: { "shape": "round-rectangle", "width": 24, "height": 18, "font-size": 11 } },
+    { selector: "node.collapsed", style: { "border-width": 2, "border-color": ink, "border-style": "dashed" } },
+    { selector: "node[cat='network']", style: { "shape": "diamond", "width": 18, "height": 18 } },
+    { selector: "node[cat='data']", style: { "shape": "barrel" } },
+    { selector: "node[cat='subnet']", style: { "shape": "round-rectangle", "width": 18, "height": 12, "font-size": 9 } },
+    { selector: "node.external", style: { "background-opacity": .25, "border-width": 1.5, "border-style": "dashed", "border-color": ink } },
+    { selector: "node.privnode", style: { "border-width": 3, "border-color": color("priv"), "border-style": "solid" } },
+    { selector: "edge", style: {
+        "width": 1.2, "line-color": css("--c-edge"), "curve-style": "bezier", "opacity": .8,
+        "target-arrow-shape": "none", "font-size": 9, "color": ink, "text-outline-color": bg, "text-outline-width": 2,
+        "text-rotation": "autorotate", "label": "" } },
+    { selector: "edge.rel", style: { "width": 1.6 } },
+    { selector: "edge.own", style: { "width": 4, "line-color": color("subnet"), "opacity": .9 } },
+    { selector: "edge.rel[rel='peered']", style: { "line-style": "dashed", "width": 2, "line-color": color("network") } },
+    { selector: "edge.acc", style: { "label": "data(rel)", "target-arrow-shape": "triangle", "arrow-scale": .8,
+        "target-arrow-color": css("--c-edge"), "curve-style": "bezier", "font-size": 10, "text-rotation": "none",
+        "text-background-color": bg, "text-background-opacity": 1, "text-background-padding": 2, "text-outline-width": 0 } },
+    { selector: "edge.acc.priv", style: { "line-color": color("priv"), "target-arrow-color": color("priv"), "width": 2.2 } },
+    { selector: "edge.acc.eligible", style: { "line-style": "dashed" } },
+    { selector: "edge.acc.member", style: { "line-style": "dotted", "label": "" } },
+    { selector: "edge.acc.member.eligible", style: { "line-style": "dashed", "label": "eligible" } },
+    { selector: "edge.acc[rel='grants'], edge.acc[rel='assigned']", style: { "label": "data(rel)", "line-color": color("pkg"), "target-arrow-color": color("pkg") } },
+    { selector: "edge.treeedge", style: { "width": 1.2, "line-color": css("--c-edge"), "opacity": .7 } },
+    { selector: "node.lr", style: { "text-valign": "center", "text-halign": "right", "text-margin-x": 5, "text-margin-y": 0 } },
+    { selector: "edge.taxi", style: { "curve-style": "taxi", "taxi-direction": "rightward", "taxi-turn": 40 } },
+    { selector: ".faded", style: { "opacity": .12 } },
+    { selector: "node.hl", style: { "border-width": 3, "border-color": css("--c-hl"), "border-style": "solid" } },
+    { selector: "edge.hl", style: { "line-color": css("--c-hl"), "opacity": 1, "width": 2.4, "label": "data(rel)" } },
+    { selector: "node:selected", style: { "border-width": 3, "border-color": css("--c-hl"), "border-style": "solid" } },
+  ];
+}
+const cy = cytoscape({ container: $("cy"), style: buildStyle(), wheelSensitivity: 0.25, minZoom: 0.05, maxZoom: 3 });
+const mq = window.matchMedia("(prefers-color-scheme: dark)");
+(mq.addEventListener ? mq.addEventListener("change", () => cy.style(buildStyle())) : mq.addListener(() => cy.style(buildStyle())));
+
+// ======================================================= mind map
+function nodeEl(n, extra) {
+  return { group: "nodes", data: Object.assign({ id: n.id, ref: n.id, label: n.name, cat: n.cat }, extra || {}), classes: n.external ? "external" : "" };
+}
+function subtreeCount(id) {
+  let c = 0; for (const k of kids.get(id) || []) { const n = byId.get(k); if (n.cat !== "subnet") c += 1 + subtreeCount(k); } return c;
+}
+function mindElements() {
+  const els = [];
+  const walk = id => {
+    const n = byId.get(id);
+    if (n.cat === "subnet") return;
+    const isRg = n.cat === "rg", open = !isRg || expanded.has(id) || AUTO_EXPAND;
+    const el = nodeEl(n, isRg && !open ? { label: `${n.name} (${subtreeCount(id)})` } : null);
+    if (isRg && !open && (kids.get(id) || []).length) el.classes += " collapsed";
+    els.push(el);
+    if (n.parent && byId.has(n.parent)) els.push({ group: "edges", data: { id: "h:" + id, source: n.parent, target: id } });
+    if (open) for (const k of kids.get(id) || []) walk(k);
+  };
+  for (const n of DATA.nodes) if (!n.external && (!n.parent || !byId.has(n.parent))) walk(n.id);
+  return els;
+}
+// Radial mind map / left-to-right tree: each branch gets space in proportion to its leaves, so lines never cross.
+function treePositions() {
+  const vis = cy.nodes(":visible"), ch = new Map(), hasParent = new Set();
+  vis.forEach(n => ch.set(n.id(), []));
+  cy.edges().forEach(e => {
+    const a = e.source().id(), b = e.target().id();
+    if (ch.has(a) && ch.has(b) && !hasParent.has(b)) { ch.get(a).push(b); hasParent.add(b); }
+  });
+  const roots = vis.map(n => n.id()).filter(id => !hasParent.has(id));
+  const leaves = new Map(); let maxDepth = 0;
+  const count = (id, d) => {
+    maxDepth = Math.max(maxDepth, d);
+    const k = ch.get(id);
+    const v = k.length ? k.reduce((a, c) => a + count(c, d + 1), 0) : 1;
+    leaves.set(id, v); return v;
+  };
+  const total = roots.reduce((a, r) => a + count(r, 0), 0) || 1;
+  const pos = {};
+  if (shape === "tree" || (view === "access" && selectedP)) {
+    let row = 0; const colW = view === "access" ? 260 : 210, rowH = view === "access" ? 70 : 34;
+    const place = (id, d) => {
+      const k = ch.get(id);
+      if (!k.length) { pos[id] = { x: d * colW, y: row++ * rowH }; return pos[id].y; }
+      const ys = k.map(c => place(c, d + 1));
+      pos[id] = { x: d * colW, y: (ys[0] + ys[ys.length - 1]) / 2 };
+      return pos[id].y;
+    };
+    roots.forEach(r => { place(r, 0); row += 0.5; });
+  } else {
+    const single = roots.length === 1, depth = maxDepth + (single ? 0 : 1);
+    const gap = Math.max(120, (total * 30) / (2 * Math.PI * Math.max(depth, 1)));
+    const place = (id, d, a0, a1) => {
+      const a = (a0 + a1) / 2;
+      pos[id] = d === 0 ? { x: 0, y: 0 } : { x: Math.cos(a) * d * gap, y: Math.sin(a) * d * gap };
+      let s = a0;
+      for (const c of ch.get(id)) { const span = (a1 - a0) * leaves.get(c) / leaves.get(id); place(c, d + 1, s, s + span); s += span; }
+    };
+    let s = -Math.PI / 2;
+    roots.forEach(r => { const span = 2 * Math.PI * leaves.get(r) / total; place(r, single ? 0 : 1, s, s + span); s += span; });
+  }
+  return pos;
+}
+
+// ======================================================= topology
+const BACKBONE = /^microsoft\.network\/(virtualnetworks|virtualnetworkgateways|azurefirewalls|bastionhosts|applicationgateways|loadbalancers|natgateways|routetables|networksecuritygroups|privatednszones|connections|localnetworkgateways|expressroutecircuits)$/;
+const TOPO_COMPACT_AT = 500;
+let topoCompact = false;
+const anchors = new Map();          // resource id -> subnet it hangs off (within 3 hops, not through backbone nodes)
+(function computeAnchors() {
+  const adj = new Map();
+  const link = (a, b) => { if (!adj.has(a)) adj.set(a, []); adj.get(a).push(b); };
+  for (const e of relEdges) { link(e.s, e.t); link(e.t, e.s); }
+  const isBackbone = n => n.cat === "subnet" || BACKBONE.test(n.type) || n.external;
+  for (const n of DATA.nodes) {
+    if (!adj.has(n.id) || isBackbone(n)) continue;
+    let frontier = [n.id], seen = new Set(frontier), found = null;
+    for (let d = 0; d < 3 && !found; d++) {
+      const next = [];
+      for (const x of frontier) for (const y of adj.get(x) || []) {
+        if (seen.has(y)) continue; seen.add(y);
+        const m = byId.get(y);
+        if (m.cat === "subnet") { found = found || y; continue; }
+        if (!isBackbone(m)) next.push(y);
+      }
+      frontier = next;
+    }
+    if (found) anchors.set(n.id, found);
+  }
+})();
+function topoElements() {
+  const keep = new Set();
+  for (const e of relEdges) { keep.add(e.s); keep.add(e.t); }
+  for (const n of DATA.nodes) if (n.type === "microsoft.network/virtualnetworks") keep.add(n.id);
+  for (const id of [...keep]) { const n = byId.get(id); if (n && n.cat === "subnet" && n.parent) keep.add(n.parent); }
+  topoCompact = keep.size > TOPO_COMPACT_AT;
+  const hiddenBy = new Map();
+  if (topoCompact) for (const id of [...keep]) {
+    const a = anchors.get(id);
+    if (a && !openSubnets.has(a)) { keep.delete(id); hiddenBy.set(a, (hiddenBy.get(a) || 0) + 1); }
+  }
+  const els = [];
+  for (const id of keep) {
+    const n = byId.get(id);
+    if (!n || HIER.has(n.cat)) continue;
+    const el = nodeEl(n, n.cat === "subnet" && n.prefix ? { label: `${n.name} ${n.prefix}` } : null);
+    if (hiddenBy.has(id)) { el.data.label += ` · ${hiddenBy.get(id)} more`; el.classes += " collapsed"; }
+    els.push(el);
+  }
+  const present = new Set(els.map(e => e.data.id));
+  for (const id of present) {       // subnet -> VNet as a short, strong edge (compound boxes stretch badly)
+    const n = byId.get(id);
+    if (n.cat === "subnet" && present.has(n.parent))
+      els.push({ group: "edges", data: { id: "o:" + id, source: id, target: n.parent, rel: "subnet of" }, classes: "own" });
+  }
+  relEdges.forEach((e, i) => {
+    if (present.has(e.s) && present.has(e.t)) els.push({ group: "edges", data: { id: "r:" + i, source: e.s, target: e.t, rel: e.rel }, classes: "rel" });
+  });
+  return els;
+}
+
+// ======================================================= access graph
+function accessElements() {
+  const els = [], seen = new Set();
+  const add = (id, label, cat, ref, kind, cls) => {
+    if (seen.has(id)) return; seen.add(id);
+    els.push({ group: "nodes", data: { id, label, cat, ref, kind }, classes: cls || "" });
+  };
+  const edge = (s, t, rel, cls) => els.push({ group: "edges", data: { id: `a:${s}>${t}:${rel}`, source: s, target: t, rel }, classes: "acc " + (cls || "") });
+  const addPrincipal = pid => { const p = pById.get(pid) || { name: pid, kind: "other" }; add("p:" + pid, p.name, p.kind, pid, "principal", isPriv(pid) ? "privnode" : ""); };
+  const addScope = sc => { const n = byId.get(sc); add("sc:" + sc, `${scopeName(sc)}${reach.get(sc) ? ` (${reach.get(sc)})` : ""}`, n ? n.cat : (sc.startsWith("mg:") ? "mg" : "other"), sc, "scope"); };
+  const addHolderLinks = (h, onlyPriv) => {
+    for (const a of azBy.get(h) || []) {
+      if (onlyPriv && !a.priv) continue;
+      const el = a.status === "eligible";
+      addScope(a.scope); edge("p:" + h, "sc:" + a.scope, a.role + (el ? " (eligible)" : ""), (a.priv ? "priv " : "") + (el ? "eligible" : ""));
+    }
+    for (const a of enBy.get(h) || []) {
+      if (onlyPriv && !a.priv) continue;
+      const rid = "er:" + a.role; add(rid, a.role, "role", a.role, "role", a.priv ? "privnode" : "");
+      edge("p:" + h, rid, a.status === "eligible" ? "eligible" : "active", (a.priv ? "priv " : "") + (a.status === "eligible" ? "eligible" : ""));
+    }
+  };
+  const addPkg = k => add("pkg:" + k, (PKG.get(k) || { name: k }).name, "pkg", k, "pkg");
+  if (selectedP) {
+    const p = pById.get(selectedP) || { kind: "other" };
+    if (p.kind === "group") {
+      for (const k of pkgOfGroup.get(selectedP) || []) { addPkg(k); edge("pkg:" + k, "p:" + selectedP, "grants", "member"); }
+      for (const m of (ACC.members[selectedP] || []).slice(0, 25)) { addPrincipal(m); edge("p:" + m, "p:" + selectedP, "member of", "member"); }
+      for (const e of (gEligOf.get(selectedP) || []).slice(0, 25)) { addPrincipal(e.p); edge("p:" + e.p, "p:" + selectedP, "eligible member", "member eligible"); }
+    }
+    addPrincipal(selectedP);
+    addHolderLinks(selectedP, false);
+    const mine = new Set((pkgAssignBy.get(selectedP) || []).map(x => x.pkg));
+    for (const k of mine) { addPkg(k); edge("p:" + selectedP, "pkg:" + k, "assigned", "member"); }
+    for (const g of memberOf.get(selectedP) || []) {
+      addPrincipal(g);
+      for (const k of (pkgOfGroup.get(g) || []).filter(k => mine.has(k))) edge("pkg:" + k, "p:" + g, "grants", "member");
+      edge("p:" + selectedP, "p:" + g, "member of", "member"); addHolderLinks(g, false);
+    }
+    for (const e of gEligBy.get(selectedP) || []) {
+      if ((memberOf.get(selectedP) || []).includes(e.g)) continue;
+      addPrincipal(e.g); edge("p:" + selectedP, "p:" + e.g, "eligible member", "member eligible"); addHolderLinks(e.g, false);
+    }
+  } else {
+    // Privilege map: a tree of scopes (tenant → MGs → subscriptions …) with each privileged holder as a leaf
+    // where the role is assigned, plus an Entra ID branch per privileged directory role.
+    const tree = (s, t) => els.push({ group: "edges", data: { id: `t:${s}>${t}`, source: s, target: t }, classes: "treeedge" });
+    const chain = sc => {
+      const anc = ancestors(sc).reverse();               // tenant … sc
+      if (!anc.length) anc.push(sc);
+      anc.forEach((a, i) => { addScope(a); if (i) tree("sc:" + anc[i - 1], "sc:" + a); });
+      return "sc:" + sc;
+    };
+    const leaf = (parent, pid, role, cls) => {
+      const p = pById.get(pid) || { name: pid, kind: "other" }, id = `h:${parent}|${pid}|${role}`;
+      add(id, `${p.name} · ${role}`, p.kind, pid, "principal", cls); tree(parent, id);
+    };
+    let n = 0;
+    for (const a of ACC.azure.filter(a => a.priv)) { if (n++ > 400) break; leaf(chain(a.scope), a.p, a.role + (a.status === "eligible" ? " (eligible)" : ""), a.status === "eligible" ? "" : "privnode"); }
+    const privEntra = ACC.entra.filter(a => a.priv);
+    if (privEntra.length) {
+      addScope("tenant");
+      add("entra", "Entra ID", "role", null, "entra"); tree("sc:tenant", "entra");
+      for (const a of privEntra) {
+        const rid = "er:" + a.role; add(rid, a.role, "role", a.role, "role", "privnode"); tree("entra", rid);
+        leaf(rid, a.p, a.status === "eligible" ? "eligible" : "active", a.status === "eligible" ? "" : "privnode");
+      }
+    }
+  }
+  return els;
+}
+
+// ======================================================= rendering
+function layoutOpts() {
+  if (view === "topo") return { name: "cose", animate: false, randomize: true, nodeRepulsion: () => 8000,
+    numIter: cy.nodes(":visible").length > 400 ? 400 : 2000,
+    idealEdgeLength: e => (e.hasClass("own") ? 30 : 75), edgeElasticity: e => (e.hasClass("own") ? 400 : 100),
+    gravity: 0.5, componentSpacing: 80, padding: 30, nodeDimensionsIncludeLabels: cy.nodes(":visible").length <= 400 };
+  return { name: "preset", positions: treePositions(), fit: false, animate: false, padding: 30 };
+}
+function render(keepView) {
+  const vp = keepView ? { zoom: cy.zoom(), pan: Object.assign({}, cy.pan()) } : null;
+  const oldPos = new Map();
+  if (keepView && view === "topo") cy.nodes().forEach(n => oldPos.set(n.id(), Object.assign({}, n.position())));
+  cy.startBatch();
+  cy.elements().remove();
+  cy.add(view === "mind" ? mindElements() : view === "topo" ? topoElements() : accessElements());
+  if (view === "mind" && shape === "tree") cy.nodes().addClass("lr");
+  if (view === "mind" && shape === "tree") cy.edges().addClass("taxi");
+  cy.endBatch();
+  applyFilters();
+  updateWarn();
+  $("expand").style.display = view === "mind" && !AUTO_EXPAND ? "" : "none";
+  $("shape-seg").style.display = view === "mind" ? "" : "none";
+  $("filters").style.display = view === "access" ? "none" : "";
+  $("q").placeholder = view === "access" ? "Search people, groups, apps…" : "Search name, type, IP prefix…";
+  if (oldPos.size) {                               // topology drill-down: keep the map where it was
+    cy.nodes().forEach(n => {
+      const p = oldPos.get(n.id()) || oldPos.get(anchors.get(n.id()));
+      const j = oldPos.has(n.id()) ? 0 : 1;
+      if (p) n.position({ x: p.x + j * (Math.random() * 40 - 20), y: p.y + j * (Math.random() * 40 - 20) });
+    });
+    cy.elements(":visible").layout(Object.assign(layoutOpts(), { randomize: false, numIter: 300 })).run();
+  } else cy.elements(":visible").layout(layoutOpts()).run();
+  if (vp) { cy.zoom(vp.zoom); cy.pan(vp.pan); } else fitAll();
+  if (view === "access") { selectedP ? showPrincipal(selectedP) : showAccessHome(); }
+  else if (!cy.nodes().length) $("panel").innerHTML = `<p class="hint">${view === "topo" ? "No network connections found in this scope." : "No resources in this scope."}</p>`;
+  else if (!keepView) $("panel").innerHTML = `<p class="hint">Click a node for details: connections, who has access and which policies apply.${view === "mind" && !AUTO_EXPAND ? " Click a resource group to open it." : ""}</p>`;
+}
+
+function fitAll() {                                  // fit, but don't blow small graphs up to giant nodes
+  cy.fit(cy.elements(":visible"), 30);
+  if (cy.zoom() > 1.3) { cy.zoom(1.3); cy.center(cy.elements(":visible")); }
+}
+
+// ======================================================= panels
+function portalLink(n) {
+  if (!n.rid || n.external || !n.rid.startsWith("/subscriptions/")) return "";
+  const t = DATA.meta.tenantId ? "@" + DATA.meta.tenantId + "/" : "";
+  return `<p><a href="https://portal.azure.com/#${t}resource${esc(n.rid)}" target="_blank" rel="noopener">Open in Azure portal ↗</a></p>`;
+}
+const pLink = (pid, extra, pre, post) => {        // pre/post: already-escaped text around the identity line
+  const p = pById.get(pid) || { name: pid, kind: "other" };
+  return `<a data-p="${esc(pid)}">${esc(p.name)}</a>${p.guest ? '<span class="tag">guest</span>' : ""}${extra || ""}<span class="rel">${pre || ""}${KIND[p.kind] || "Identity"}${p.upn ? " · " + esc(p.upn) : ""}${post || ""}</span>`;
+};
+const sLink = sc => byId.has(sc) || sc === "tenant" ? `<a data-go="${esc(sc)}">${esc(scopeName(sc))}</a>` : esc(scopeName(sc));
+function accessHere(id) {                   // who can do what here, and why — groups, packages and PIM expanded to people
+  const anc = ancestors(id), { rows, people } = peopleAt(id);
+  if (!rows.length) return ACC.azure.length ? `<h3>Who can do what here</h3><p class="hint">No role assignments at or above this scope were found.</p>` : "";
+  const sections = [3, 2, 1].map(l => {
+    const list = people.filter(x => x.level === l).sort((a, b) => (b.now - a.now) || pName(a.pid).localeCompare(pName(b.pid)));
+    if (!list.length) return "";
+    const standing = list.filter(x => x.now === l).length;
+    const li = list.slice(0, 40).map(x => {
+      const best = x.paths.filter(e => roleLevel(e.role) === l).sort((a, b) => jit(a) - jit(b) || !!a.via - !!b.via)[0];
+      const tags = (x.now < l ? '<span class="tag">just-in-time</span>' : "") + (x.paths.length > 1 ? `<span class="tag">${x.paths.length} paths</span>` : "");
+      return `<li>${pLink(x.pid, tags)}<span class="chain">${chain(x.pid, best)} · ${best.scope === id ? "here" : "from " + esc(scopeName(best.scope))}</span></li>`;
+    }).join("");
+    return `<h3>${LEVEL[l]} · ${list.length}${standing < list.length ? ` (${standing} standing)` : ""}</h3><ul>${li}</ul>` +
+      (list.length > 40 ? `<p class="hint">Showing 40 of ${list.length}.</p>` : "");
+  }).join("");
+  const ga = new Set(ACC.entra.filter(a => a.role === "Global Administrator").map(a => a.p)).size;
+  const sorted = rows.slice().sort((a, b) => (b.priv - a.priv) || anc.indexOf(b.scope) - anc.indexOf(a.scope));
+  const li = sorted.slice(0, 60).map(a => {
+    const m = (pById.get(a.p) || {}).kind === "group" ? ` <span class="tag">${(ACC.members[a.p] || []).length} members</span>` : "";
+    return `<li><b>${esc(a.role)}</b>${a.priv ? '<span class="tag priv">privileged</span>' : ""}${a.status === "eligible" ? '<span class="tag">eligible (PIM)</span>' : ""}${a.cond ? '<span class="tag">condition</span>' : ""} — ` +
+      pLink(a.p, m, `${a.scope === id ? "assigned here" : "inherited from " + esc(scopeName(a.scope))} · `) + `</li>`;
+  }).join("");
+  return `<h3>Who can do what here</h3><p class="hint">People, after expanding groups, access packages and PIM. <i>Just-in-time</i>: they must activate PIM first.</p>` + sections +
+    (ga ? `<p class="hint">Also: ${ga} Global Administrator${ga > 1 ? "s" : ""} can give themselves User Access Administrator on the whole tenant ("elevate access").</p>` : "") +
+    `<details><summary class="hint" style="cursor:pointer">Role assignments behind this (${rows.length})</summary><ul>${li}</ul>${rows.length > 60 ? `<p class="hint">Showing 60 of ${rows.length}.</p>` : ""}</details>`;
+}
+function policiesHere(id) {
+  const anc = ancestors(id), set = new Set(anc), n = byId.get(id) || {};
+  const rows = ACC.policies.filter(p => set.has(p.scope)).sort((a, b) => anc.indexOf(b.scope) - anc.indexOf(a.scope));
+  if (!rows.length) return "";
+  const nc = p => { if (!p.nonCompliant) return 0; return n.sub ? (p.nonCompliant[n.sub] || 0) : Object.values(p.nonCompliant).reduce((a, b) => a + b, 0); };
+  const li = rows.map(p => `<li>${esc(p.name)}${p.initiative ? '<span class="tag">initiative</span>' : ""}${p.enforce === "DoNotEnforce" ? '<span class="tag">not enforced</span>' : ""}` +
+    `${nc(p) ? `<span class="tag priv">${nc(p)} non-compliant</span>` : ""}<span class="rel">${p.scope === id ? "assigned here" : "inherited from " + esc(scopeName(p.scope))}</span></li>`).join("");
+  return `<h3>Policies (${rows.length})</h3><ul>${li}</ul>`;
+}
+function landingZone(id) {
+  const anc = ancestors(id).slice(1).reverse();
+  return anc.length ? `<p class="path">${anc.map(a => sLink(a)).join(" › ")}</p>` : "";
+}
+function showDetails(id) {
+  const n = byId.get(id); if (!n) return;
+  const sub = n.sub && byId.get("/subscriptions/" + n.sub);
+  const rows = [["Subscription", n.cat === "sub" ? "" : sub ? sub.name : n.sub], ["Resource group", n.rg], ["Location", n.loc], ["SKU", n.sku], ["Kind", n.kind],
+    ["Address prefix", n.prefix], ["Resources inside", HIER.has(n.cat) ? reach.get(id) || 0 : ""], ["Note", n.external ? "Outside the scanned scope" : ""]].filter(r => r[1] !== "" && r[1] != null);
+  const tags = n.tags && Object.keys(n.tags).length ? `<h3>Tags</h3><dl>${Object.entries(n.tags).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : "";
+  const con = relEdges.filter(e => e.s === id || e.t === id).map(e => {
+    const o = byId.get(e.s === id ? e.t : e.s);
+    return `<li><a data-go="${esc(o.id)}">${esc(o.name)}</a><span class="rel">${esc(e.rel)} · ${esc(o.type)}</span></li>`;
+  });
+  const type = n.cat === "tenant" ? "tenant root" : n.cat === "mg" ? "management group" : n.type;
+  $("panel").innerHTML =
+    `<h2>${esc(n.cat === "tenant" ? tenantName : n.name)}</h2><div class="type">${esc(type)}</div>` + landingZone(id) +
+    (rows.length ? `<dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : "") + portalLink(n) +
+    (con.length ? `<h3>Connections (${con.length})</h3><ul>${con.join("")}</ul>` : "") +
+    (n.external ? "" : accessHere(id) + policiesHere(id)) + tags;
+}
+function showAccessHome() {
+  const q = $("q").value.trim().toLowerCase();
+  const users = ACC.principals.filter(p => p.kind === "user").length, groups = ACC.principals.filter(p => p.kind === "group").length;
+  const sps = ACC.principals.filter(p => p.kind === "sp").length;
+  const privCount = ACC.principals.filter(p => isPriv(p.id)).length;
+  const ga = new Set(ACC.entra.filter(a => a.role === "Global Administrator").map(a => a.p)).size;
+  const guests = ACC.principals.filter(p => p.guest).length, pkgs = (ACC.packages || []).length;
+  const elig = ACC.azure.filter(a => a.status === "eligible").length + ACC.entra.filter(a => a.status === "eligible").length + (ACC.groupEligible || []).length;
+  const list = ACC.principals.filter(p => {
+    if (accessFilter === "guest" && !p.guest) return false;
+    if (accessFilter === "priv" && !isPriv(p.id)) return false;
+    if (["user", "group", "sp"].includes(accessFilter) && p.kind !== accessFilter) return false;
+    return !q || (p.name + " " + (p.upn || "")).toLowerCase().includes(q);
+  }).sort((a, b) => (isPriv(b.id) - isPriv(a.id)) || a.name.localeCompare(b.name));
+  const chips = [["priv", "Privileged"], ["all", "All"], ["user", "Users"], ["guest", "Guests"], ["group", "Groups"], ["sp", "Apps"]]
+    .map(([k, l]) => `<button data-f="${k}" class="${accessFilter === k ? "on" : ""}">${l}</button>`).join("");
+  const li = list.slice(0, 300).map(p => {
+    const e = effective(p.id);
+    const badge = (isPriv(p.id) ? '<span class="tag priv">privileged</span>' : "") + (p.unresolved ? '<span class="tag">unresolved</span>' : "");
+    return `<li>${pLink(p.id, badge, "", ` · ${e.az.length} Azure · ${e.en.length} Entra`)}</li>`;
+  }).join("");
+  const ca = (ACC.ca || []).length ? `<h3>Conditional Access (${ACC.ca.length})</h3><ul>${ACC.ca.map(c =>
+    `<li>${esc(c.name)}<span class="rel">${c.state === "enabled" ? "On" : c.state === "disabled" ? "Off" : "Report-only"}</span></li>`).join("")}</ul>` : "";
+  const warn = (DATA.meta.warnings || []).length ? `<h3>Scan notes</h3><ul>${DATA.meta.warnings.map(w => `<li class="hint">${esc(w)}</li>`).join("")}</ul>` : "";
+  $("panel").innerHTML =
+    `<h2>Identities &amp; access</h2><div class="type">Entra → Azure: who can do what, where</div>` +
+    `<div class="stats"><div><b>${users}</b>users</div><div><b>${groups}</b>groups</div><div><b>${sps}</b>apps</div>` +
+    `<div><b>${privCount}</b>privileged</div><div><b>${ga}</b>global admins</div><div><b>${ACC.azure.length}</b>Azure assignments</div>` +
+    `<div><b>${guests}</b>guests</div><div><b>${elig}</b>PIM-eligible</div><div><b>${pkgs}</b>access packages</div></div>` +
+    `<p class="hint">The map shows every privileged assignment where it's made: Azure roles on the scope tree, Entra admin roles under Entra ID (red ring = active, plain = PIM-eligible). Pick an identity to see everything it can reach, directly and through groups.</p>` +
+    (pkgs ? `<p>${(ACC.packages || []).map(k => `<a data-pkg="${esc(k.id)}">${esc(k.name)}</a>`).join(" · ")}</p>` : "") +
+    `<div class="chips" id="chips">${chips}</div>` +
+    (li ? `<ul>${li}</ul>${list.length > 300 ? `<p class="hint">Showing 300 of ${list.length}; refine the search.</p>` : ""}` : `<p class="hint">No matching identities.</p>`) + ca + warn +
+    `<p><a id="csv2">Export everyone's access (CSV)</a></p>`;
+}
+function blastHtml(pid) {
+  const b = blast(pid), privEn = b.en.filter(a => a.priv), privNow = privEn.filter(a => !jit(a));
+  const what = x => `change <b>${x.res}</b> resource${x.res === 1 ? "" : "s"} in <b>${x.subs}</b> subscription${x.subs === 1 ? "" : "s"}` +
+    (x.manage ? ` and grant access on <b>${x.manage}</b> scope${x.manage === 1 ? "" : "s"}` : "");
+  const more = b.all.res > b.now.res || b.all.subs > b.now.subs || b.all.manage > b.now.manage;
+  const en = privEn.length ? ` Entra admin roles: <b>${[...new Set(privEn.map(a => a.role))].map(esc).join(", ")}</b>${!privNow.length ? " (after PIM activation)" : privNow.length < privEn.length ? " (some after PIM activation)" : ""}.` : "";
+  if (!b.all.res && !b.all.subs && !b.all.manage && !privEn.length) return `<p class="blast calm"><b>Blast radius:</b> read-only — this identity can't change Azure resources or administer Entra.</p>`;
+  return `<p class="blast"><b>Blast radius if misused:</b> right now it can ${b.now.res || b.now.subs || b.now.manage ? what(b.now) : "change nothing in Azure"}` +
+    `${more ? `; after PIM activation it can ${what(b.all)}` : ""}.${en}</p>`;
+}
+function showPrincipal(pid) {
+  const p = pById.get(pid) || { name: pid, kind: "other" }, e = effective(pid);
+  const how = a => a.via ? `<span class="chain">${chain(pid, a)}</span>` : "";
+  const flag = a => (a.priv ? '<span class="tag priv">privileged</span>' : "") + (jit(a) ? '<span class="tag">eligible (PIM)</span>' : "") +
+    (a.until && daysLeft(a.until) <= 14 ? `<span class="tag priv">ends ${fmtDate(a.until)}</span>` : a.until ? `<span class="tag">until ${fmtDate(a.until)}</span>` : "");
+  const en = e.en.map(a => `<li><b>${esc(a.role)}</b>${flag(a)}${how(a)}` +
+    `<span class="rel">${a.scope && a.scope !== "/" ? "scoped: " + esc(a.scope) : "whole directory"}</span></li>`).join("");
+  const az = e.az.sort((a, b) => b.priv - a.priv || jit(a) - jit(b)).map(a => `<li><b>${esc(a.role)}</b>${flag(a)} on ${sLink(a.scope)}${how(a)}` +
+    `<span class="rel">${scopeKind(a.scope)}${reach.get(a.scope) ? ` · reaches ${reach.get(a.scope)} resources` : ""}</span></li>`).join("");
+  const groups = (memberOf.get(pid) || []).map(g => `<li>${pLink(g)}</li>`).join("");
+  const pimGroups = (gEligBy.get(pid) || []).map(x => `<li>${pLink(x.g, `<span class="tag">eligible</span>${x.until ? `<span class="tag">until ${fmtDate(x.until)}</span>` : ""}`)}</li>`).join("");
+  const pk = (pkgAssignBy.get(pid) || []).map(x => { const k = PKG.get(x.pkg) || { name: x.pkg };
+    return `<li><a data-pkg="${esc(x.pkg)}">${esc(k.name)}</a>${x.until ? `<span class="tag${daysLeft(x.until) <= 14 ? " priv" : ""}">until ${fmtDate(x.until)}</span>` : '<span class="tag">no end date</span>'}` +
+      `<span class="rel">${esc(k.catalog || "")}${(k.groups || []).length ? " · grants " + k.groups.map(g => esc(pName(g))).join(", ") : ""}</span></li>`; }).join("");
+  const rq = (requestsBy.get(pid) || []).map(x => `<li><a data-pkg="${esc(x.pkg)}">${esc((PKG.get(x.pkg) || { name: x.pkg }).name)}</a><span class="rel">waiting for approval since ${fmtDate(x.created)}</span></li>`).join("");
+  const mem = p.kind === "group" ? (ACC.members[pid] || []) : [];
+  const eligMem = p.kind === "group" ? (gEligOf.get(pid) || []) : [];
+  const grantedBy = p.kind === "group" ? (pkgOfGroup.get(pid) || []) : [];
+  $("panel").innerHTML =
+    `<p><a id="back">← All identities</a></p><h2>${esc(p.name)}</h2><div class="type">${KIND[p.kind] || "Identity"}${p.guest ? " · guest" : ""}${p.upn ? " · " + esc(p.upn) : ""}</div>` +
+    (p.unresolved ? `<p class="hint">Couldn't resolve this object in Entra (deleted, or Entra wasn't read).</p>` : "") +
+    (p.kind === "group" ? "" : blastHtml(pid)) +
+    `<h3>Entra roles (${e.en.length})</h3>` + (en ? `<ul>${en}</ul>` : `<p class="hint">None.</p>`) +
+    `<h3>Azure access (${e.az.length})</h3>` + (az ? `<ul>${az}</ul>` : `<p class="hint">None.</p>`) +
+    (pk ? `<h3>Access packages</h3><ul>${pk}</ul>` : "") + (rq ? `<h3>Requested, pending approval</h3><ul>${rq}</ul>` : "") +
+    (pimGroups ? `<h3>Eligible group memberships (PIM)</h3><ul>${pimGroups}</ul>` : "") +
+    (groups ? `<h3>Member of</h3><ul>${groups}</ul>` : "") +
+    (grantedBy.length ? `<h3>Membership granted by access packages</h3><ul>${grantedBy.map(k => `<li><a data-pkg="${esc(k)}">${esc((PKG.get(k) || { name: k }).name)}</a></li>`).join("")}</ul>` : "") +
+    (mem.length ? `<h3>Members (${mem.length})</h3><ul>${mem.slice(0, 100).map(m => `<li>${pLink(m)}</li>`).join("")}</ul>` : "") +
+    (eligMem.length ? `<h3>Eligible members, PIM for Groups (${eligMem.length})</h3><ul>${eligMem.map(x => `<li>${pLink(x.p, x.until ? `<span class="tag">until ${fmtDate(x.until)}</span>` : "")}</li>`).join("")}</ul>` : "");
+}
+function showPackage(k) {
+  const pk = PKG.get(k); if (!pk) return;
+  const asg = (ACC.packageAssignments || []).filter(x => x.pkg === k), rq = (ACC.packageRequests || []).filter(x => x.pkg === k);
+  const grants = (pk.groups || []).map(g => {
+    const roles = [...(azBy.get(g) || []).map(a => `${esc(a.role)} on ${esc(scopeName(a.scope))}`), ...(enBy.get(g) || []).map(a => `${esc(a.role)} (Entra)`)];
+    return `<li>${pLink(g)}<span class="chain">${roles.length ? roles.join(" · ") : "no Azure or Entra roles"}</span></li>`;
+  }).join("");
+  $("panel").innerHTML = `<p><a id="back">← All identities</a></p><h2>${esc(pk.name)}</h2><div class="type">Access package${pk.catalog ? " · catalog " + esc(pk.catalog) : ""}</div>` +
+    `<h3>Grants membership of</h3>` + (grants ? `<ul>${grants}</ul>` : `<p class="hint">No groups (other resources only, e.g. SharePoint sites or apps).</p>`) +
+    `<h3>Assigned to (${asg.length})</h3>` + (asg.length ? `<ul>${asg.map(x => `<li>${pLink(x.p, x.until ? `<span class="tag${daysLeft(x.until) <= 14 ? " priv" : ""}">until ${fmtDate(x.until)}</span>` : '<span class="tag">no end date</span>')}</li>`).join("")}</ul>` : `<p class="hint">Nobody.</p>`) +
+    (rq.length ? `<h3>Pending requests (${rq.length})</h3><ul>${rq.map(x => `<li>${pLink(x.p, "", "", ` · since ${fmtDate(x.created)}`)}</li>`).join("")}</ul>` : "");
+}
+function showRole(role) {
+  const rows = ACC.entra.filter(a => a.role === role);
+  $("panel").innerHTML = `<p><a id="back">← All identities</a></p><h2>${esc(role)}</h2><div class="type">Entra directory role</div>` +
+    `<h3>Holders (${rows.length})</h3><ul>${rows.map(a => `<li>${pLink(a.p, a.status === "eligible" ? '<span class="tag">eligible</span>' : "")}</li>`).join("")}</ul>`;
+}
+function openPrincipal(pid) { selectedP = pid; setView("access"); }
+function openPackage(k) { selectedP = null; setView("access"); showPackage(k); }
+$("panel").addEventListener("click", e => {
+  const t = e.target;
+  if (t.closest("#back")) { selectedP = null; render(); return; }
+  if (t.closest("#csv2")) { saveCsv(); return; }
+  const f = t.closest("[data-f]"); if (f) { accessFilter = f.dataset.f; showAccessHome(); return; }
+  const p = t.closest("[data-p]"); if (p) { openPrincipal(p.dataset.p); return; }
+  const k = t.closest("[data-pkg]"); if (k) { if (view !== "access") setView("access"); showPackage(k.dataset.pkg); return; }
+  const go = t.closest("[data-go]"); if (go) { if (view === "access") setView("mind"); focusNode(go.dataset.go); }
+});
+function focusNode(id) {
+  let el = cy.getElementById(id);
+  if (!el.length && view === "mind") { let p = byId.get(id); while (p && p.cat !== "rg") p = byId.get(p.parent); if (p) { expanded.add(p.id); render(true); el = cy.getElementById(id); } }
+  if (!el.length && view === "topo" && anchors.has(id)) { openSubnets.add(anchors.get(id)); render(true); el = cy.getElementById(id); }
+  if (!el.length) { showDetails(id); return; }
+  highlight(el);
+  cy.animate({ center: { eles: el }, zoom: Math.max(cy.zoom(), 1) }, { duration: 300 });
+  showDetails(id);
+}
+function highlight(el) {
+  cy.elements().removeClass("hl faded");
+  if (!el) return;
+  const hood = el.closedNeighborhood();
+  cy.elements().not(hood).addClass("faded");
+  hood.addClass("hl");
+}
+cy.on("tap", "node", e => {
+  const n = e.target, ref = n.data("ref");
+  if (view === "access") {
+    const k = n.data("kind");
+    if (k === "principal") { if (ref !== selectedP) { selectedP = ref; render(); } return; }
+    if (k === "entra") return;
+    if (k === "pkg") { highlight(n); showPackage(ref); return; }
+    highlight(n);
+    if (k === "role") showRole(ref); else showDetails(ref);
+    return;
+  }
+  const d = byId.get(ref);
+  if (view === "mind" && d.cat === "rg" && !AUTO_EXPAND) { expanded.has(d.id) ? expanded.delete(d.id) : expanded.add(d.id); render(true); highlight(cy.getElementById(d.id)); }
+  else if (view === "topo" && topoCompact && d.cat === "subnet") { openSubnets.has(d.id) ? openSubnets.delete(d.id) : openSubnets.add(d.id); render(true); highlight(cy.getElementById(d.id)); }
+  else highlight(n);
+  showDetails(ref);
+});
+cy.on("tap", e => { if (e.target === cy) highlight(null); });
+
+// ======================================================= search
+let qTimer;
+$("q").addEventListener("input", e => {
+  clearTimeout(qTimer);
+  qTimer = setTimeout(() => {
+    if (view === "access") { if (selectedP) { selectedP = null; render(); } else showAccessHome(); return; }
+    const q = e.target.value.trim().toLowerCase();
+    cy.elements().removeClass("hl faded");
+    if (!q) return;
+    const hits = cy.nodes().filter(n => {
+      const d = byId.get(n.data("ref")) || {};
+      return ((d.name || "") + " " + (d.type || "") + " " + (d.prefix || "") + " " + (d.rg || "")).toLowerCase().includes(q);
+    });
+    cy.elements().not(hits).addClass("faded"); hits.addClass("hl");
+    if (hits.length) cy.animate({ fit: { eles: hits, padding: 60 } }, { duration: 300 });
+  }, 200);
+});
+$("q").addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  clearTimeout(qTimer);                                   // Enter wins over the pending live filter
+  const q = e.target.value.trim().toLowerCase(); if (!q) return;
+  if (view === "access") { const p = ACC.principals.find(p => (p.name + " " + (p.upn || "")).toLowerCase().includes(q)); if (p) openPrincipal(p.id); return; }
+  const hit = DATA.nodes.find(d => d.name.toLowerCase().includes(q));
+  if (hit) focusNode(hit.id);
+});
+
+// ======================================================= toolbar
+function segOn(id) { for (const b of document.querySelectorAll(`#${id}`)[0].parentElement.children) b.classList.toggle("on", b.id === id); }
+function setView(v) {
+  view = v; segOn("v-" + v);
+  const rep = v === "find" || v === "changes";
+  $("report").hidden = !rep; $("cy").hidden = rep; $("panel").hidden = rep;
+  for (const id of ["q", "fit", "png"]) $(id).hidden = rep;
+  if (rep) {
+    for (const id of ["filters", "shape-seg", "expand"]) $(id).style.display = "none";
+    $("warn").innerHTML = "";
+    v === "find" ? renderFindings() : renderChanges();
+  } else { cy.resize(); render(); }
+}
+$("v-mind").onclick = () => setView("mind");
+$("v-topo").onclick = () => setView("topo");
+$("v-access").onclick = () => { selectedP = null; setView("access"); };
+$("v-find").onclick = () => setView("find");
+$("v-changes").onclick = () => setView("changes");
+$("s-radial").onclick = () => { shape = "radial"; segOn("s-radial"); render(); };
+$("s-tree").onclick = () => { shape = "tree"; segOn("s-tree"); render(); };
+$("fit").onclick = fitAll;
+$("expand").onclick = () => {
+  const all = expanded.size < DATA.nodes.filter(n => n.cat === "rg").length;
+  expanded.clear();
+  if (all) DATA.nodes.forEach(n => { if (n.cat === "rg") expanded.add(n.id); });
+  $("expand").textContent = all ? "Collapse all" : "Expand all";
+  render();
+};
+$("png").onclick = () => {
+  const a = document.createElement("a");
+  a.href = cy.png({ full: true, scale: 2, bg: css("--bg"), maxWidth: 12000, maxHeight: 12000 });
+  a.download = `rootline-${view}-${new Date().toISOString().slice(0, 10)}.png`;
+  a.click();
+};
+
+// ======================================================= findings
+const SPECIAL_SUBNETS = new Set(["gatewaysubnet", "azurefirewallsubnet", "azurefirewallmanagementsubnet", "routeserversubnet", "azurebastionsubnet"]);
+const SEV = ["high", "medium", "low", "info"];
+let findingsCache = null, findFilter = "all";
+const outE = new Map(), inE = new Map();
+for (const e of relEdges) { if (!outE.has(e.s)) outE.set(e.s, []); outE.get(e.s).push(e); if (!inE.has(e.t)) inE.set(e.t, []); inE.get(e.t).push(e); }
+const outRel = (id, rel) => (outE.get(id) || []).filter(e => e.rel === rel).map(e => e.t);
+const inRel = (id, rel) => (inE.get(id) || []).filter(e => e.rel === rel).map(e => e.s);
+const hubVnets = new Set();                  // VNets with an Azure Firewall in them
+for (const n of DATA.nodes) if (n.type === "microsoft.network/azurefirewalls") for (const sn of outRel(n.id, "in subnet")) { const s = byId.get(sn); if (s) hubVnets.add(s.parent); }
+
+function computeFindings() {
+  if (findingsCache) return findingsCache;
+  const F = [];
+  const add = (sev, area, title, why, fix, items) => { if (items.length) F.push({ sev, area, title, why, fix, items }); };
+  const pItem = (pid, sub) => { const p = pById.get(pid) || {}; return { p: pid, label: pName(pid), sub: sub || p.upn || KIND[p.kind] || "" }; };
+  const nItem = (id, sub) => ({ go: id, label: scopeName(id), sub: sub || "" });
+  const people = pid => { const p = pById.get(pid); return p && p.kind === "group" && (ACC.members[pid] || []).length ? ACC.members[pid] : [pid]; };
+  const on = a => `${a.role} on ${scopeName(a.scope)}`;
+  const subsN = DATA.nodes.filter(n => n.cat === "sub");
+
+  // ---------- identity
+  if (DATA.meta.entra !== false) {
+    const gaNow = [...new Set(ACC.entra.filter(a => a.role === "Global Administrator" && !jit(a)).flatMap(a => people(a.p)))];
+    const gaAll = [...new Set(ACC.entra.filter(a => a.role === "Global Administrator").flatMap(a => people(a.p)))];
+    if (gaNow.length > 2) add("high", "Identity", `${gaNow.length} standing Global Administrators`,
+      "Global Administrator controls every part of Entra and can take over all Azure subscriptions. Permanent holders are the first target of phishing and token theft.",
+      "Keep two cloud-only emergency (break-glass) accounts as permanent Global Administrators. Make everyone else eligible in PIM, with MFA and approval on activation, or move them to a less privileged role.",
+      gaNow.map(p => pItem(p)));
+    if (gaAll.length >= 5) add("medium", "Identity", `${gaAll.length} Global Administrators in total`,
+      "Microsoft recommends fewer than five Global Administrators, active or eligible.",
+      "Review who really needs it; most tasks work with a narrower role such as User, Exchange or Security Administrator.",
+      gaAll.map(p => pItem(p)));
+    const standing = ACC.entra.filter(a => a.priv && !jit(a) && a.role !== "Global Administrator" && (pById.get(a.p) || {}).kind !== "sp");
+    add("medium", "Identity", "Privileged directory roles held permanently",
+      "Privileged roles that are always on widen the window for misuse. PIM turns them into just-in-time access with MFA, justification and an audit trail.",
+      "Convert these assignments to eligible in Privileged Identity Management (Entra ID P2 or Governance).",
+      standing.map(a => pItem(a.p, a.role)));
+    const gPriv = [], gRead = [];
+    for (const g of ACC.principals.filter(p => p.guest)) {
+      const e = effective(g.id), w = e.az.filter(a => roleLevel(a.role) >= 2), pe = e.en.filter(a => a.priv);
+      if (w.length || pe.length) gPriv.push(pItem(g.id, [...w.map(on), ...pe.map(a => a.role)].slice(0, 2).join(" · ")));
+      else if (e.az.length || e.en.length) gRead.push(pItem(g.id, [...e.az.map(on), ...e.en.map(a => a.role)][0]));
+    }
+    add("high", "Identity", "Guests who can change Azure resources or hold admin roles",
+      "Guest accounts are managed by another organization: their MFA, device and leaver process are outside your control.",
+      "Give partners the least access they need, time-limit it (an access package with an end date and access reviews), and never grant guests Owner, Contributor or admin roles on shared scopes.",
+      gPriv);
+    add("info", "Identity", "Guests with read access", "Worth an occasional review: guests often keep access after a project ends.",
+      "Run an access review on these guests, or grant them access through an expiring access package.", gRead);
+    const orph = ACC.azure.filter(a => (pById.get(a.p) || {}).unresolved);
+    add("medium", "Identity", "Role assignments for deleted identities",
+      "These assignments point to identities that no longer exist in Entra. They clutter reviews and count against the role assignment limit.",
+      "Delete the assignments (Access control (IAM) → Role assignments → type 'Unknown').",
+      orph.map(a => ({ go: byId.has(a.scope) || a.scope === "tenant" ? a.scope : null, label: a.p, sub: on(a) })));
+  }
+  const direct = ACC.azure.filter(a => (pById.get(a.p) || {}).kind === "user" && !jit(a));
+  add("medium", "Identity", "Azure roles assigned directly to users",
+    "Direct user assignments are hard to review and are easily forgotten when people change jobs.",
+    "Assign roles to groups (ideally granted through access packages or PIM for Groups) and remove the direct assignments.",
+    direct.map(a => pItem(a.p, on(a))));
+  const root = ACC.azure.filter(a => a.scope === "tenant" && roleLevel(a.role) === 3);
+  add("high", "Identity", "Full control at the tenant root",
+    "Owner or access administrator at the Tenant Root Group applies to every management group and subscription, today and in future.",
+    "Remove standing root assignments; use PIM-eligible assignments on the intermediate management group, and the 'elevate access' of a Global Administrator only for break-glass.",
+    root.map(a => pItem(a.p, a.role + (jit(a) ? " (eligible)" : ""))));
+  const many = [];
+  for (const s of subsN) {
+    const o = peopleAt(s.id).people.filter(x => (pById.get(x.pid) || {}).kind === "user" && x.paths.some(e => e.role === "Owner" && !jit(e)));
+    if (o.length > 3) many.push(nItem(s.id, `${o.length} people with standing Owner`));
+  }
+  add("medium", "Identity", "Subscriptions with more than 3 owners (people)",
+    "Microsoft Defender for Cloud recommends at most three owners per subscription: every owner can change anything and grant access to others.",
+    "Reduce standing owners; make the rest PIM-eligible or use Contributor where access management isn't needed.", many);
+  const spOwn = ACC.azure.filter(a => (pById.get(a.p) || {}).kind === "sp" && roleLevel(a.role) === 3 && !/\/resourcegroups\//.test(a.scope));
+  add("medium", "Identity", "Apps with Owner or access-admin rights on subscriptions or management groups",
+    "A leaked secret or a compromised pipeline with these rights can grant itself or others anything.",
+    "Scope pipeline identities to resource groups with Contributor (or a custom role), use workload identity federation instead of secrets, and keep role assignment rights out of pipelines.",
+    spOwn.map(a => pItem(a.p, on(a))));
+  const custom = [...new Set(ACC.azure.filter(a => a.custom).map(a => a.role))];
+  add("info", "Identity", "Custom roles in use", "Custom roles need maintenance when Azure adds new actions; check they still grant only what's intended.",
+    "Review the permissions of each custom role; prefer built-in roles where one fits.",
+    custom.map(r => ({ label: r, sub: `${ACC.azure.filter(a => a.role === r).length} assignment(s)` })));
+  const pkgNoEnd = [];
+  for (const k of ACC.packages || []) {
+    const privG = (k.groups || []).filter(g => (azBy.get(g) || []).some(a => roleLevel(a.role) >= 2) || (enBy.get(g) || []).some(a => a.priv));
+    const open = (ACC.packageAssignments || []).filter(x => x.pkg === k.id && !x.until);
+    if (privG.length && open.length) pkgNoEnd.push({ pkg: k.id, label: k.name, sub: `${open.length} assignment(s) without end date · grants ${privG.map(pName).join(", ")}` });
+  }
+  add("low", "Identity", "Access packages that grant change rights without an end date",
+    "Access that never ends tends to outlive the need for it.",
+    "Set an expiration on the package policy (for example 90 or 180 days) and add an access review.", pkgNoEnd);
+  const soon = [], in14 = s => s && daysLeft(s) >= 0 && daysLeft(s) <= 14;
+  for (const a of ACC.azure) if (in14(a.until)) soon.push(pItem(a.p, `${on(a)} (eligible) · ends ${fmtDate(a.until)}`));
+  for (const a of ACC.entra) if (in14(a.until)) soon.push(pItem(a.p, `${a.role} · ends ${fmtDate(a.until)}`));
+  for (const x of ACC.packageAssignments || []) if (in14(x.until)) soon.push(pItem(x.p, `${(PKG.get(x.pkg) || { name: x.pkg }).name} · ends ${fmtDate(x.until)}`));
+  for (const x of ACC.groupEligible || []) if (in14(x.until)) soon.push(pItem(x.p, `eligible for ${pName(x.g)} · ends ${fmtDate(x.until)}`));
+  add("info", "Identity", "Access ending in the next 14 days", "Renew what's still needed before it lapses, and let the rest expire.",
+    "Extend the assignment in PIM or the access package if the person still needs it.", soon);
+  add("info", "Identity", "Access package requests waiting for approval", "Requests that wait long often end with access granted another way.",
+    "Ask the approvers to decide, or adjust the package policy.",
+    (ACC.packageRequests || []).map(r => pItem(r.p, `${(PKG.get(r.pkg) || { name: r.pkg }).name} · since ${fmtDate(r.created)}`)));
+  add("low", "Identity", "Conditional Access policies in report-only mode", "Report-only policies log what they would do but don't protect anything.",
+    "Check the sign-in logs for the policy's impact and turn it on.",
+    (ACC.ca || []).filter(c => c.state === "enabledForReportingButNotEnforced").map(c => ({ label: c.name, sub: "report-only" })));
+
+  // ---------- network
+  const subnets = DATA.nodes.filter(n => n.cat === "subnet" && !n.external);
+  add("medium", "Network", "Subnets without a network security group",
+    "Without an NSG everything in the VNet (and peered VNets) can reach the subnet on any port.",
+    "Attach an NSG to each subnet (the Azure landing zone policy 'Deny subnet without NSG' keeps it that way). Gateway, firewall, Bastion and Route Server subnets are exempt.",
+    subnets.filter(s => !SPECIAL_SUBNETS.has(s.name.toLowerCase()) && !inRel(s.id, "protects").length)
+      .map(s => nItem(s.id, `${(byId.get(s.parent) || {}).name || ""}${s.prefix ? " · " + s.prefix : ""}`)));
+  const vmPip = [];
+  for (const pip of DATA.nodes.filter(n => n.type === "microsoft.network/publicipaddresses")) for (const t of outRel(pip.id, "public IP of")) {
+    const tn = byId.get(t) || {};
+    const vms = tn.type === "microsoft.compute/virtualmachines" ? [t] : tn.type === "microsoft.network/networkinterfaces" ? outRel(t, "NIC of").filter(v => (byId.get(v) || {}).type === "microsoft.compute/virtualmachines") : [];
+    for (const v of vms) vmPip.push(nItem(v, `public IP ${pip.name}${tn.type === "microsoft.network/networkinterfaces" && !inRel(t, "protects").length ? " · no NSG on the NIC" : ""}`));
+  }
+  add("high", "Network", "Virtual machines with a public IP address",
+    "A public IP exposes the VM to internet scanning and brute force; it also bypasses the hub firewall.",
+    "Remove the public IP; reach the VM through Azure Bastion or a VPN, and publish apps through Application Gateway or Front Door.", vmPip);
+  const fwRoutes = new Set(DATA.nodes.filter(n => n.type === "microsoft.network/routetables" && outRel(n.id, "routes to").length).map(n => n.id));
+  const bypass = new Map();
+  if (hubVnets.size) for (const e of relEdges.filter(e => e.rel === "peered")) for (const [hub, spoke] of [[e.s, e.t], [e.t, e.s]]) {
+    const sp = byId.get(spoke);
+    if (!hubVnets.has(hub) || hubVnets.has(spoke) || !sp || sp.external) continue;
+    for (const sn of kids.get(spoke) || []) {
+      const s = byId.get(sn);
+      if (s.cat !== "subnet" || SPECIAL_SUBNETS.has(s.name.toLowerCase()) || inRel(sn, "routes").some(rt => fwRoutes.has(rt))) continue;
+      bypass.set(sn, nItem(sn, `${sp.name}${s.prefix ? " · " + s.prefix : ""}`));
+    }
+  }
+  add("medium", "Network", "Spoke subnets not routed through the hub firewall",
+    "In a hub-and-spoke network, spokes should send traffic through the firewall. Without a route table pointing to it, traffic leaves the spoke uninspected.",
+    "Associate a route table with 0.0.0.0/0 (and other spokes' ranges) to the firewall's private IP. Subnets with private endpoints only can be exempt by design.",
+    [...bypass.values()]);
+
+  // ---------- governance
+  add("medium", "Governance", "Subscriptions directly under the Tenant Root Group",
+    "Subscriptions at the root miss the policies and access set on your landing zone management groups.",
+    "Move each subscription under the right landing zone (Corp, Online, Sandbox…); consider a default management group for new subscriptions.",
+    subsN.filter(s => s.parent === "tenant").map(s => nItem(s.id)));
+  if (ACC.policies.length) add("medium", "Governance", "Subscriptions without any Azure Policy",
+    "Nothing checks or enforces standards (locations, tags, security settings) in these subscriptions.",
+    "Place them under a management group with your baseline assignments, or assign the Microsoft cloud security benchmark.",
+    subsN.filter(s => { const set = new Set(ancestors(s.id)); return !ACC.policies.some(p => set.has(p.scope)); }).map(s => nItem(s.id)));
+  add("low", "Governance", "Policies assigned but not enforced",
+    "Enforcement mode 'DoNotEnforce' only evaluates; deny and deploy effects don't run. Fine for a trial, risky if forgotten.",
+    "Review compliance, then set enforcement to Default.",
+    ACC.policies.filter(p => p.enforce === "DoNotEnforce").map(p => ({ go: byId.has(p.scope) || p.scope === "tenant" ? p.scope : null, label: p.name, sub: "on " + scopeName(p.scope) })));
+  const nc = ACC.policies.map(p => [p, Object.values(p.nonCompliant || {}).reduce((a, b) => a + b, 0)]).filter(x => x[1]).sort((a, b) => b[1] - a[1]);
+  add("medium", "Governance", `${nc.reduce((a, x) => a + x[1], 0)} non-compliant resources`,
+    "Resources that break your own policies: each one is a known gap.",
+    "Open the policy in Azure Policy → Compliance, fix the resources or create remediation tasks; grant exemptions only with an end date.",
+    nc.map(([p, n]) => ({ go: byId.has(p.scope) || p.scope === "tenant" ? p.scope : null, label: p.name, sub: `${n} non-compliant · ${scopeName(p.scope)}` })));
+
+  // ---------- cost
+  const ofType = t => DATA.nodes.filter(n => n.type === t && !n.external);
+  const where = n => [n.sku, n.rg].filter(Boolean).join(" · ");
+  add("low", "Cost", "Unattached managed disks", "Disks keep costing money after their VM is gone.",
+    "Snapshot if needed, then delete.", ofType("microsoft.compute/disks").filter(d => !outRel(d.id, "disk of").length).map(d => nItem(d.id, where(d))));
+  add("low", "Cost", "Public IP addresses not in use", "Standard public IPs are billed even when nothing uses them.",
+    "Delete them, unless reserved on purpose.", ofType("microsoft.network/publicipaddresses").filter(p => !outRel(p.id, "public IP of").length).map(p => nItem(p.id, where(p))));
+  add("low", "Cost", "Network interfaces not attached", "Leftovers from deleted VMs: they hold IP addresses and confuse reviews.",
+    "Delete them.", ofType("microsoft.network/networkinterfaces").filter(n => !outRel(n.id, "NIC of").length).map(n => nItem(n.id, where(n))));
+  add("low", "Cost", "Empty resource groups", "Clutter that makes ownership and cost reports harder to read.",
+    "Delete them, or tag them if they're kept on purpose.",
+    DATA.nodes.filter(n => n.cat === "rg" && !(kids.get(n.id) || []).length).map(n => nItem(n.id, scopeName("/subscriptions/" + n.sub))));
+  F.sort((a, b) => SEV.indexOf(a.sev) - SEV.indexOf(b.sev));
+  return (findingsCache = F);
+}
+function landingZoneChecks() {               // loose match against the Azure landing zone reference structure
+  const mgs = DATA.nodes.filter(n => n.cat === "mg");
+  const has = re => mgs.some(m => re.test(m.name) || re.test(m.id.slice(3)));
+  const depth = id => ancestors(id).length - 1;
+  return [
+    ["Intermediate root management group below Tenant Root Group", mgs.some(m => m.parent === "tenant")],
+    ["Platform", has(/platform/i)], ["Identity", has(/identity/i)], ["Management", has(/management/i)], ["Connectivity", has(/connectivity|network/i)],
+    ["Landing Zones", has(/landing.?zones?/i)], ["Corp", has(/corp/i)], ["Online", has(/online/i)],
+    ["Sandbox", has(/sandbox/i)], ["Decommissioned", has(/decom/i)],
+    ["No subscriptions at the Tenant Root Group", !DATA.nodes.some(n => n.cat === "sub" && n.parent === "tenant")],
+    ["Policies assigned on management groups", ACC.policies.some(p => p.scope.startsWith("mg:"))],
+    ["Hub network with Azure Firewall", hubVnets.size > 0],
+    ["Hierarchy within 6 levels", !mgs.some(m => depth(m.id) > 6)],
+  ];
+}
+function findingItem(i) {
+  const label = i.p ? `<a data-p="${esc(i.p)}">${esc(i.label)}</a>` : i.pkg ? `<a data-pkg="${esc(i.pkg)}">${esc(i.label)}</a>` :
+    i.go && (byId.has(i.go) || i.go === "tenant") ? `<a data-go="${esc(i.go)}">${esc(i.label)}</a>` : esc(i.label);
+  return `<li>${label}${i.sub ? `<span class="rel">${esc(i.sub)}</span>` : ""}</li>`;
+}
+function renderFindings() {
+  const F = computeFindings(), cnt = s => F.filter(f => f.sev === s).length;
+  const list = F.filter(f => findFilter === "all" || f.sev === findFilter || f.area === findFilter);
+  const chips = [["all", "All"], ...SEV.map(s => [s, s[0].toUpperCase() + s.slice(1)]), ["Identity", "Identity"], ["Network", "Network"], ["Governance", "Governance"], ["Cost", "Cost"]]
+    .map(([k, l]) => `<button data-ff="${k}" class="${findFilter === k ? "on" : ""}">${l}</button>`).join("");
+  const lz = landingZoneChecks(), lzOk = lz.filter(c => c[1]).length;
+  $("report").innerHTML = `<div class="wrap"><h2>Findings</h2>
+    <p class="hint">Checked against Microsoft guidance for Azure RBAC, Entra roles, networking and Azure landing zones. Each finding says why it matters and how to fix it. Nothing is changed in your tenant.</p>
+    <div class="summary">${SEV.map(s => `<div><b>${cnt(s)}</b><span class="sev ${s}">${s}</span></div>`).join("")}<div><b>${lzOk}/${lz.length}</b>landing zone checks</div></div>
+    <div class="toolbar"><div class="chips">${chips}</div><span style="flex:1"></span>
+      <button class="btn" id="evidence" title="Printable report for auditors: findings, privileged access, packages, policies">Save audit report</button>
+      <button class="btn" id="csv" title="Everyone's access, one row per role and scope, for Excel">Export access (CSV)</button></div>
+    ${list.map(f => `<details class="finding"${list.length === 1 ? " open" : ""}><summary><span class="sev ${f.sev}">${f.sev}</span><span><b>${esc(f.title)}</b> <span class="tag">${f.area}</span></span><span class="n">${f.items.length}</span></summary>
+      <div class="body"><p><b>Why it matters:</b> ${esc(f.why)}</p><p><b>How to fix:</b> ${esc(f.fix)}</p>
+      <ul>${f.items.slice(0, 200).map(findingItem).join("")}</ul>${f.items.length > 200 ? `<p class="hint">Showing 200 of ${f.items.length}; the audit report lists all.</p>` : ""}</div></details>`).join("") ||
+      `<p class="hint">Nothing to report${findFilter === "all" ? "" : " for this filter"}.</p>`}
+    <details class="finding"${findFilter === "all" || findFilter === "Governance" ? "" : " hidden"}><summary><span class="sev ${lzOk === lz.length ? "info" : "low"}">check</span><span><b>Landing zone structure</b> <span class="tag">Governance</span></span><span class="n">${lzOk}/${lz.length}</span></summary>
+      <div class="body"><p class="hint">Compared with the Azure landing zone reference (Cloud Adoption Framework). Names are matched loosely; your own names may differ.</p>
+      <ul class="check">${lz.map(([t, ok]) => `<li><span class="${ok ? "yes" : "no"}">${ok ? "✓" : "✗"}</span> ${esc(t)}</li>`).join("")}</ul></div></details>
+  </div>`;
+}
+$("report").addEventListener("click", e => {
+  const t = e.target;
+  const f = t.closest("[data-ff]"); if (f) { findFilter = f.dataset.ff; renderFindings(); return; }
+  const p = t.closest("[data-p]"); if (p) { openPrincipal(p.dataset.p); return; }
+  const k = t.closest("[data-pkg]"); if (k) { openPackage(k.dataset.pkg); return; }
+  const go = t.closest("[data-go]"); if (go) { setView("mind"); focusNode(go.dataset.go); return; }
+  if (t.closest("#evidence")) saveEvidence();
+  if (t.closest("#csv")) saveCsv();
+});
+
+// ======================================================= changes between scans
+let compareWith = null, compareLabel = "", compareName = null, lastDiff = null;
+function diffScans(A, B) {
+  const kEdge = e => e.rel === "peered" ? "peered|" + [e.s, e.t].sort().join("|") : `${e.rel}|${e.s}|${e.t}`;
+  const d = (xs, ys, k) => {
+    const a = new Map((xs || []).map(x => [k(x), x])), b = new Map((ys || []).map(y => [k(y), y]));
+    return { added: [...b].filter(([x]) => !a.has(x)).map(x => x[1]), removed: [...a].filter(([x]) => !b.has(x)).map(x => x[1]) };
+  };
+  const AA = A.access || {}, BA = B.access || {};
+  const oldNodes = new Map((A.nodes || []).map(n => [n.id, n])), oldP = new Map((AA.principals || []).map(p => [p.id, p]));
+  const members = [];
+  for (const [g, ms] of Object.entries(BA.members || {})) {
+    const o = (AA.members || {})[g]; if (!o) continue;
+    const os = new Set(o), ns = new Set(ms);
+    for (const m of ms) if (!os.has(m)) members.push({ g, m, added: true });
+    for (const m of o) if (!ns.has(m)) members.push({ g, m, added: false });
+  }
+  const oldPol = new Map((AA.policies || []).map(p => [p.id, p]));
+  return {
+    A, oldNodes, oldP, members,
+    resources: d((A.nodes || []).filter(isResource), B.nodes.filter(isResource), n => n.id),
+    scopes: d((A.nodes || []).filter(n => HIER.has(n.cat)), B.nodes.filter(n => HIER.has(n.cat)), n => n.id),
+    moved: B.nodes.filter(n => HIER.has(n.cat) && oldNodes.has(n.id) && (oldNodes.get(n.id).parent || "") !== (n.parent || "")).map(n => ({ n, from: oldNodes.get(n.id).parent })),
+    edges: d(A.edges, B.edges, kEdge),
+    azure: d(AA.azure, BA.azure, a => `${a.p}|${a.role}|${a.scope}|${a.status || "active"}`),
+    entra: d(AA.entra, BA.entra, a => `${a.p}|${a.role}|${a.status}`),
+    packages: d(AA.packageAssignments, BA.packageAssignments, x => `${x.p}|${x.pkg}`),
+    policies: d(AA.policies, BA.policies, p => p.id),
+    enforcement: (BA.policies || []).filter(p => oldPol.has(p.id) && oldPol.get(p.id).enforce !== p.enforce),
+  };
+}
+function diffHtml(D) {
+  const nm = id => (byId.get(id) || D.oldNodes.get(id) || { name: id.split("/").pop() }).name;
+  const pn = id => (pById.get(id) || D.oldP.get(id) || { name: id }).name;
+  const pl = id => pById.has(id) ? `<a data-p="${esc(id)}">${esc(pn(id))}</a>` : esc(pn(id));
+  const nl = id => byId.has(id) ? `<a data-go="${esc(id)}">${esc(nm(id))}</a>` : esc(nm(id));
+  const sn = sc => sc === "tenant" ? esc(tenantName) : nl(sc);
+  const sec = (title, added, removed, fmt, limit) => {
+    if (!added.length && !removed.length) return "";
+    const L = limit || 150;
+    return `<h3>${title} <span class="plus">+${added.length}</span> <span class="minus">−${removed.length}</span></h3><ul>` +
+      added.slice(0, L).map(x => `<li><span class="plus">+</span> ${fmt(x)}</li>`).join("") +
+      removed.slice(0, L).map(x => `<li><span class="minus">−</span> ${fmt(x)}</li>`).join("") + `</ul>` +
+      (added.length > L || removed.length > L ? `<p class="hint">Showing the first ${L} of each.</p>` : "");
+  };
+  const role = a => `${pl(a.p)} — <b>${esc(a.role)}</b>${a.priv ? '<span class="tag priv">privileged</span>' : ""}${a.status === "eligible" ? '<span class="tag">eligible</span>' : ""}`;
+  const accessCount = D.azure.added.length + D.azure.removed.length + D.entra.added.length + D.entra.removed.length + D.members.length + D.packages.added.length + D.packages.removed.length;
+  const html =
+    `<p class="hint">Compared with ${esc(compareLabel || "an earlier scan")} (scanned ${esc(new Date(D.A.meta.generated).toLocaleString())}).</p>` +
+    `<div class="summary"><div><b>${accessCount}</b>access changes</div><div><b>+${D.resources.added.length} −${D.resources.removed.length}</b>resources</div>` +
+    `<div><b>+${D.edges.added.length} −${D.edges.removed.length}</b>connections</div><div><b>${D.policies.added.length + D.policies.removed.length + D.enforcement.length}</b>policy changes</div>` +
+    `<div><b>${D.moved.length + D.scopes.added.length + D.scopes.removed.length}</b>structure changes</div></div>` +
+    sec("Azure access", D.azure.added.sort((a, b) => b.priv - a.priv), D.azure.removed.sort((a, b) => b.priv - a.priv), a => `${role(a)} on ${sn(a.scope)}`) +
+    sec("Entra roles", D.entra.added, D.entra.removed, role) +
+    sec("Group membership", D.members.filter(x => x.added), D.members.filter(x => !x.added), x => `${pl(x.m)} ${x.added ? "joined" : "left"} ${pl(x.g)}`) +
+    sec("Access package assignments", D.packages.added, D.packages.removed, x => `${pl(x.p)} — ${esc((PKG.get(x.pkg) || { name: x.pkg }).name)}`) +
+    sec("Management groups, subscriptions, resource groups", D.scopes.added, D.scopes.removed, n => `${nl(n.id)}<span class="rel">${esc(scopeKind(n.id))}</span>`) +
+    (D.moved.length ? `<h3>Moved</h3><ul>${D.moved.map(x => `<li>${nl(x.n.id)} moved from ${esc(x.from ? (byId.get(x.from) || D.oldNodes.get(x.from) || { name: x.from }).name : "?")} to ${sn(x.n.parent)}</li>`).join("")}</ul>` : "") +
+    sec("Policies", D.policies.added, D.policies.removed, p => `${esc(p.name)}<span class="rel">on ${esc(scopeName(p.scope))}</span>`) +
+    (D.enforcement.length ? `<h3>Enforcement changed</h3><ul>${D.enforcement.map(p => `<li>${esc(p.name)}<span class="rel">now ${p.enforce === "DoNotEnforce" ? "not enforced" : "enforced"}</span></li>`).join("")}</ul>` : "") +
+    sec("Resources", D.resources.added, D.resources.removed, n => `${nl(n.id)}<span class="rel">${esc(n.type)}</span>`) +
+    sec("Connections", D.edges.added, D.edges.removed, e => `${esc(nm(e.s))} <i>${esc(e.rel)}</i> ${esc(nm(e.t))}`, 60);
+  return `<div class="changes">${html}${accessCount || D.resources.added.length || D.resources.removed.length || D.edges.added.length || D.edges.removed.length ||
+    D.policies.added.length || D.policies.removed.length || D.enforcement.length || D.moved.length || D.scopes.added.length || D.scopes.removed.length ? "" : '<p class="hint">No changes.</p>'}</div>`;
+}
+function renderChanges() {
+  const snaps = APP && APP.native ? (APP.snapshots || []) : [];
+  const older = snaps.filter(s => s.name < (APP && APP.current || ""));
+  if (!compareWith && older.length && !compareName) { loadCompare(older[0].name, older[0].label); return; }
+  const picker = older.length ? `<select id="cmp"><option value="">Choose an earlier scan…</option>${older.map(s =>
+    `<option value="${esc(s.name)}"${s.name === compareName ? " selected" : ""}>${esc(s.label)}</option>`).join("")}</select>` : "";
+  lastDiff = compareWith ? diffScans(compareWith, DATA) : null;
+  $("report").innerHTML = `<div class="wrap"><h2>Changes</h2>
+    <p class="hint">What changed between an earlier scan and this one: who has access, structure, policies, resources and connections.</p>
+    <div class="toolbar">Compare with ${picker}<label class="btn">Open a scan file…<input type="file" id="cmpfile" accept=".json,application/json" hidden></label></div>
+    <div id="diff">${lastDiff ? diffHtml(lastDiff) : `<p class="hint">${older.length ? "Pick an earlier scan." : "Open an earlier scan file (.json) to compare. In the app, every scan is kept for comparison."}</p>`}</div></div>`;
+  if ($("cmp")) $("cmp").onchange = () => { const o = $("cmp").selectedOptions[0]; if (o.value) loadCompare(o.value, o.textContent); };
+  $("cmpfile").onchange = ev => {
+    const f = ev.target.files[0]; if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      try { const d = JSON.parse(r.result); if (!d || !d.meta || !Array.isArray(d.nodes)) throw new Error(); compareWith = d; compareLabel = f.name; compareName = null; renderChanges(); }
+      catch (err) { $("diff").innerHTML = `<p class="err">That file isn't a Rootline scan (a .json file from the scans folder).</p>`; }
+    };
+    r.readAsText(f);
+  };
+}
+async function loadCompare(name, label) {
+  compareName = name;
+  $("report").innerHTML = `<div class="wrap"><h2><span class="spin"></span>Loading ${esc(label)}…</h2></div>`;
+  try { compareWith = await call("load", { name }); compareLabel = label; }
+  catch (err) { compareWith = null; flash(err.message); }
+  if (view === "changes") renderChanges();
+}
+
+// ======================================================= audit evidence: access register, CSV, printable report
+function accessRegister() {                  // one row per identity × role × scope; groups expanded to their members
+  const rows = [];
+  const push = (pid, a, plane) => {
+    const p = pById.get(pid) || { name: pid, kind: "other" }, pk = a.via ? pkgsFor(pid, a.via) : [];
+    rows.push({ id: pid, name: p.name, upn: p.upn || "", kind: KIND[p.kind] || "Identity", guest: p.guest ? "Yes" : "", plane, role: a.role,
+      level: plane === "Azure" ? LEVEL[roleLevel(a.role)] : a.priv ? "Privileged" : "Standard", priv: !!a.priv || (plane === "Azure" && roleLevel(a.role) >= 2),
+      scope: plane === "Azure" ? scopeName(a.scope) : a.scope && a.scope !== "/" ? a.scope : "Directory",
+      scopeType: plane === "Azure" ? scopeKind(a.scope) : "Entra directory",
+      path: plane === "Azure" ? ancestors(a.scope).reverse().map(scopeName).join(" / ") : "",
+      status: jit(a) ? "Eligible (PIM)" : "Active", until: (a.until || (a.pim && a.pim.until) || "").slice(0, 10),
+      group: a.via ? pName(a.via) : "", pimGroup: a.pim ? "Yes" : "", pkg: pk.map(x => x.pkg.name).join("; ") });
+  };
+  for (const p of ACC.principals) {
+    if (p.kind === "group" && ((ACC.members[p.id] || []).length || (gEligOf.get(p.id) || []).length)) continue;
+    const e = effective(p.id);
+    for (const a of e.az) push(p.id, a, "Azure");
+    for (const a of e.en) push(p.id, a, "Entra");
+  }
+  return rows.sort((a, b) => b.priv - a.priv || a.name.localeCompare(b.name) || a.role.localeCompare(b.role));
+}
+const stamp = () => (DATA.meta.generated || new Date().toISOString()).slice(0, 10);
+function saveFile(name, text, type) {
+  if (host) return call("saveText", { name, text }).then(r => { if (r && r.path) flash(`Saved to ${r.path}`); }).catch(err => alert(err.message));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([type === "text/csv" ? "﻿" + text : text], { type: type + ";charset=utf-8" }));
+  a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+}
+const CSV_COLS = [["Identity", "name"], ["UPN", "upn"], ["Type", "kind"], ["Guest", "guest"], ["Plane", "plane"], ["Role", "role"], ["Access level", "level"],
+  ["Scope", "scope"], ["Scope type", "scopeType"], ["Scope path", "path"], ["Status", "status"], ["Ends", "until"], ["Via group", "group"],
+  ["Via PIM for Groups", "pimGroup"], ["Via access package", "pkg"], ["Object ID", "id"]];
+function csvText(rows) {
+  const cell = v => { v = String(v == null ? "" : v); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return /[",;\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; };
+  return [CSV_COLS.map(c => c[0]).join(","), ...rows.map(r => CSV_COLS.map(c => cell(r[c[1]])).join(","))].join("\r\n");
+}
+function saveCsv() { return saveFile(`rootline-access_${stamp()}.csv`, csvText(accessRegister()), "text/csv"); }
+function evidenceHtml() {
+  const F = computeFindings(), reg = accessRegister(), priv = reg.filter(r => r.priv);
+  const table = (head, rows) => `<table><thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join("")}</tr></thead><tbody>${rows.map(r =>
+    `<tr>${r.map(c => `<td>${esc(c)}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  const n = c => DATA.nodes.filter(x => x.cat === c).length;
+  const ga = new Set(ACC.entra.filter(a => a.role === "Global Administrator" && !jit(a)).map(a => a.p)).size;
+  const lz = landingZoneChecks();
+  let sec = 0; const h = t => `<h2>${++sec}. ${esc(t)}</h2>`;
+  const D = lastDiff;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Access and governance evidence — ${esc(tenantName)}</title><style>
+body{font:12px/1.45 system-ui,"Segoe UI",sans-serif;color:#1b1f24;background:#fff;margin:24px auto;padding:0 16px;max-width:1150px}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:26px 0 6px;border-bottom:1px solid #ccd3db;padding-bottom:3px}h3{font-size:13px;margin:14px 0 4px}
+table{border-collapse:collapse;width:100%;margin:6px 0}th,td{border:1px solid #dde2e8;padding:3px 6px;text-align:left;vertical-align:top}th{background:#eef2f7}
+.sev{font-weight:700;text-transform:uppercase;font-size:10px}.high{color:#b91c1c}.medium{color:#c2410c}.low{color:#0a66c2}.info{color:#5d6772}
+.meta{color:#5d6772}.note{background:#f5f6f8;border-left:3px solid #c2410c;padding:6px 10px}p{margin:4px 0}
+@media print{body{margin:0;max-width:none}h2,h3{break-after:avoid}tr{break-inside:avoid}}
+</style></head><body>
+<h1>Access and governance evidence — ${esc(tenantName)}</h1>
+<p class="meta">Scan of ${esc(new Date(DATA.meta.generated).toLocaleString())} · ${esc(DATA.meta.scope || "")} · Tenant ID ${esc(DATA.meta.tenantId || "—")}<br>
+Report created ${esc(new Date().toLocaleString())} with Rootline${APP && APP.version ? " " + esc(APP.version) : ""}${APP && APP.account ? " by " + esc(APP.account) : ""}. Read-only scan; contents reflect what the scanning account could see.</p>
+<p class="note">Confidential: this report names everyone with administrative rights. Share it only with people entitled to see that.</p>
+${h("Summary")}${table(["Measure", "Value"], [
+    ["Management groups", n("mg")], ["Subscriptions", n("sub")], ["Resources", resCount],
+    ["Identities with access", ACC.principals.length], ["Identities with change or admin rights", new Set(priv.map(r => r.id)).size],
+    ["Standing Global Administrators", ga], ["Guests", ACC.principals.filter(p => p.guest).length],
+    ["PIM-eligible assignments", ACC.azure.filter(a => a.status === "eligible").length + ACC.entra.filter(a => a.status === "eligible").length + (ACC.groupEligible || []).length],
+    ["Access packages / assignments / pending requests", `${(ACC.packages || []).length} / ${(ACC.packageAssignments || []).length} / ${(ACC.packageRequests || []).length}`],
+    ["Policy assignments", ACC.policies.length], ["Conditional Access policies", (ACC.ca || []).length],
+    ["Findings (high / medium / low / info)", SEV.map(s => F.filter(f => f.sev === s).length).join(" / ")],
+    ["Landing zone checks passed", `${lz.filter(c => c[1]).length} of ${lz.length}`]])}
+${h("Findings")}${F.map(f => `<h3><span class="sev ${f.sev}">${f.sev}</span> ${esc(f.title)} (${f.items.length}) — ${esc(f.area)}</h3>
+<p><b>Why it matters:</b> ${esc(f.why)}</p><p><b>How to fix:</b> ${esc(f.fix)}</p>${table(["Item", "Detail"], f.items.slice(0, 500).map(i => [i.label, i.sub || ""]))}
+${f.items.length > 500 ? `<p class="meta">First 500 of ${f.items.length}; the CSV export lists all access.</p>` : ""}`).join("") || "<p>None.</p>"}
+<h3>Landing zone structure</h3>${table(["Check", "Result"], lz.map(([t, ok]) => [t, ok ? "Yes" : "No"]))}
+${h("Privileged access register")}<p class="meta">Everyone who can change Azure resources or holds a privileged Entra role, and how they got it. Groups are expanded to their members; "Eligible (PIM)" needs activation first.</p>
+${table(["Identity", "UPN", "Plane", "Role", "Scope", "Status", "Ends", "Via group", "Via access package"], priv.map(r =>
+    [r.name + (r.guest ? " (guest)" : ""), r.upn, r.plane, r.role, r.plane === "Azure" ? `${r.scope} (${r.scopeType})` : r.scope, r.status, r.until, r.group + (r.pimGroup ? " (PIM for Groups)" : ""), r.pkg]))}
+${(ACC.packages || []).length ? h("Access packages") + table(["Package", "Catalog", "Grants groups", "Assignments", "Without end date", "Pending requests"], (ACC.packages || []).map(k => {
+    const as = (ACC.packageAssignments || []).filter(x => x.pkg === k.id);
+    return [k.name, k.catalog || "", (k.groups || []).map(pName).join(", "), as.length, as.filter(x => !x.until).length, (ACC.packageRequests || []).filter(x => x.pkg === k.id).length];
+  })) : ""}
+${h("Azure Policy")}${table(["Policy", "Scope", "Type", "Enforcement", "Non-compliant resources"], ACC.policies.map(p =>
+    [p.name, scopeName(p.scope), p.initiative ? "Initiative" : "Policy", p.enforce === "DoNotEnforce" ? "Not enforced" : "Enforced", Object.values(p.nonCompliant || {}).reduce((a, b) => a + b, 0)]))}
+${(ACC.ca || []).length ? h("Conditional Access") + table(["Policy", "State"], ACC.ca.map(c => [c.name, c.state === "enabled" ? "On" : c.state === "disabled" ? "Off" : "Report-only"])) : ""}
+${D ? h(`Changes since ${compareLabel || "the earlier scan"}`) + table(["Change", "Identity", "Role or group", "Scope"], [
+    ...D.azure.added.map(a => ["Azure role added", pName(a.p), a.role + (a.status === "eligible" ? " (eligible)" : ""), scopeName(a.scope)]),
+    ...D.azure.removed.map(a => ["Azure role removed", (D.oldP.get(a.p) || { name: pName(a.p) }).name, a.role, scopeName(a.scope)]),
+    ...D.entra.added.map(a => ["Entra role added", pName(a.p), a.role + (a.status === "eligible" ? " (eligible)" : ""), "Directory"]),
+    ...D.entra.removed.map(a => ["Entra role removed", (D.oldP.get(a.p) || { name: pName(a.p) }).name, a.role, "Directory"]),
+    ...D.members.map(x => [x.added ? "Joined group" : "Left group", (pById.get(x.m) || D.oldP.get(x.m) || { name: x.m }).name, pName(x.g), ""])]) +
+    `<p class="meta">Also: resources +${D.resources.added.length} / −${D.resources.removed.length}, connections +${D.edges.added.length} / −${D.edges.removed.length}, policies +${D.policies.added.length} / −${D.policies.removed.length}.</p>` : ""}
+${h("Scan notes")}${(DATA.meta.warnings || []).length ? `<ul>${DATA.meta.warnings.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : "<p>Everything in scope was read.</p>"}
+</body></html>`;
+}
+function saveEvidence() { return saveFile(`rootline-evidence_${stamp()}.html`, evidenceHtml(), "text/html"); }
+
+// ======================================================= Windows app (Rootline.exe)
+function overlay(html) { $("ocard").innerHTML = html; $("overlay").style.display = html ? "flex" : "none"; }
+const host = window.chrome && window.chrome.webview;
+const pending = new Map();
+let seq = 0;
+function call(cmd, args) {                                   // ask the app; it answers with a "reply" message
+  return new Promise((resolve, reject) => {
+    if (!host) return reject(new Error("Rootline app not available."));
+    const id = String(++seq);
+    pending.set(id, { resolve, reject });
+    host.postMessage({ id, cmd, args: args || {} });
+  });
+}
+if (host) host.addEventListener("message", ev => {
+  const m = ev.data || {};
+  if (m.type === "progress") { const el = $("progress"); if (el) el.textContent = m.text; return; }
+  if (m.type !== "reply" || !pending.has(m.id)) return;
+  const p = pending.get(m.id); pending.delete(m.id);
+  m.ok ? p.resolve(m.result) : p.reject(new Error(m.error || "Something went wrong."));
+});
+function signInCard(error) {
+  overlay(`<h2>Sign in to Rootline</h2>
+    <p class="hint">Use your work account. Microsoft's own sign-in window opens next: your password or passwordless sign-in,
+    MFA and your organization's rules apply as usual. Rootline never sees your password and only reads data.</p>
+    ${error ? `<p class="err">${esc(error)}</p>` : ""}
+    <form id="signin" class="form">
+      <label>Work email <input id="f-email" type="email" autocomplete="username" placeholder="name@company.com" required></label>
+      <details ${APP.needsClientId ? "open" : ""}><summary>Advanced</summary>
+        <label>Tenant <span class="hint">(optional: domain or ID, for guest accounts)</span><input id="f-tenant" placeholder="company.onmicrosoft.com"></label>
+        <label>App (client) ID ${APP.needsClientId ? "<span class='hint'>(required: from your Rootline app registration)</span>" : "<span class='hint'>(optional: use your own app registration)</span>"}
+          <input id="f-client" placeholder="00000000-0000-0000-0000-000000000000" ${APP.needsClientId ? "required" : ""}></label>
+      </details>
+      <p><button class="btn primary" type="submit" id="f-go">Sign in with Microsoft</button></p>
+    </form>`);
+  $("f-email").focus();
+  $("signin").onsubmit = async ev => {
+    ev.preventDefault();
+    $("f-go").disabled = true; $("f-go").textContent = "Waiting for Microsoft sign-in…";
+    try { await call("signIn", { email: $("f-email").value, tenant: $("f-tenant").value, clientId: $("f-client").value }); }
+    catch (err) { signInCard(err.message); }
+  };
+}
+function welcomeCard() {
+  const entraNote = APP.entra ? "" :
+    `<p class="warn-inline"><b>Entra (users, groups, admin roles) can't be read yet.</b> ${esc(APP.entraProblem || "No directory access.")}
+     ${APP.consentUrl ? `<a data-ext="${esc(APP.consentUrl)}">Open the approval page</a> (for an admin), then sign in again.` : ""}
+     Until then, scans cover Azure only.</p>`;
+  overlay(`<h2>Welcome to Rootline</h2><p>Signed in as <b>${esc(APP.account)}</b>${APP.tenantName ? ` to <b>${esc(APP.tenantName)}</b>` : ""}.</p>
+    <p class="hint">A scan reads your subscriptions, resources, network, management groups, role assignments and policies${APP.entra ? ", plus Entra roles, groups and Conditional Access" : ""}.
+    It's read-only, shows only what your account may see, and results stay on this PC.</p>${entraNote}
+    <p><button class="btn primary" id="w-scan">Scan now</button> <button class="btn" id="w-out">Sign out</button></p>`);
+  $("w-scan").onclick = () => $("scan").click();
+  $("w-out").onclick = () => $("signout").click();
+}
+document.addEventListener("click", ev => {                   // outside links open in the normal browser
+  const a = ev.target.closest("[data-ext]"); if (!a) return;
+  ev.preventDefault(); call("openExternal", { url: a.dataset.ext }).catch(() => {});
+});
+if (APP && APP.native) {
+  if (!APP.signedIn) signInCard();
+  else {
+    $("appbar").hidden = false;
+    $("who").textContent = `${APP.account}${APP.tenantName ? " · " + APP.tenantName : ""}`;
+    const sel = $("snap");
+    if (!APP.snapshots.length) sel.hidden = true;
+    for (const s of APP.snapshots) { const o = document.createElement("option"); o.value = s.name; o.textContent = s.label; o.selected = s.name === APP.current; sel.appendChild(o); }
+    sel.onchange = () => call("open", { name: sel.value }).catch(err => alert(err.message));
+    $("download").hidden = !APP.current;
+    $("download").onclick = async () => {
+      try { const r = await call("download", { name: APP.current }); if (r && r.path) flash(`Saved to ${r.path}`); }
+      catch (err) { alert(err.message); }
+    };
+    $("scan").onclick = async () => {
+      overlay(`<h2><span class="spin"></span>Scanning your estate…</h2><p class="hint" id="progress">Starting…</p>
+        <p class="hint">Large tenants can take a few minutes.</p>`);
+      try { await call("scan"); }
+      catch (err) { overlay(`<h2>Scan failed</h2><p>${esc(err.message)}</p><p><button class="btn" onclick="overlay('')">Close</button></p>`); }
+    };
+    $("signout").onclick = () => call("signOut").catch(err => alert(err.message));
+    if (DATA.meta.empty) welcomeCard();
+  }
+}
+function flash(text) {
+  const d = document.createElement("div"); d.className = "flash"; d.textContent = text; document.body.appendChild(d);
+  setTimeout(() => d.remove(), 4000);
+}
+if (!DATA.meta.empty) render();
+
+// ======================================================= demo data (template opened directly)
+function demoData() {
+  const S = "00000000-0000-0000-0000-00000000000a", sid = "/subscriptions/" + S;
+  const soon = d => new Date(Date.now() + d * 864e5).toISOString();
+  const rg = n => `${sid}/resourcegroups/${n}`;
+  const r = (g, t, n) => `${rg(g)}/providers/${t}/${n}`;
+  const node = (id, name, type, cat, parent, x) => Object.assign({ id, rid: id, name, type, cat, parent, sub: S, loc: "westeurope" }, x || {});
+  const hub = r("rg-hub", "microsoft.network/virtualnetworks", "vnet-hub"), spoke = r("rg-app", "microsoft.network/virtualnetworks", "vnet-app");
+  const vm = r("rg-app", "microsoft.compute/virtualmachines", "vm-app-01"), st = r("rg-app", "microsoft.storage/storageaccounts", "stappdemo");
+  const nodes = [
+    node("tenant", "Tenant Root Group", "tenant", "tenant", null, { sub: null, loc: null, rid: null }),
+    node("mg:platform", "Platform", "managementgroup", "mg", "tenant", { sub: null, loc: null, rid: null }),
+    node("mg:landingzones", "Landing Zones", "managementgroup", "mg", "tenant", { sub: null, loc: null, rid: null }),
+    node(sid, "sub-demo-prod", "microsoft.resources/subscriptions", "sub", "mg:landingzones", { loc: null }),
+    node(rg("rg-hub"), "rg-hub", "microsoft.resources/resourcegroups", "rg", sid),
+    node(rg("rg-app"), "rg-app", "microsoft.resources/resourcegroups", "rg", sid),
+    node(hub, "vnet-hub", "microsoft.network/virtualnetworks", "network", rg("rg-hub"), { rg: "rg-hub" }),
+    node(hub + "/subnets/azurefirewallsubnet", "AzureFirewallSubnet", "subnet", "subnet", hub, { prefix: "10.0.0.0/26", rg: "rg-hub" }),
+    node(r("rg-hub", "microsoft.network/azurefirewalls", "afw-hub"), "afw-hub", "microsoft.network/azurefirewalls", "network", rg("rg-hub"), { sku: "AZFW_VNet", rg: "rg-hub" }),
+    node(r("rg-hub", "microsoft.network/publicipaddresses", "pip-afw"), "pip-afw", "microsoft.network/publicipaddresses", "network", rg("rg-hub"), { sku: "Standard", rg: "rg-hub" }),
+    node(spoke, "vnet-app", "microsoft.network/virtualnetworks", "network", rg("rg-app"), { rg: "rg-app" }),
+    node(spoke + "/subnets/snet-vm", "snet-vm", "subnet", "subnet", spoke, { prefix: "10.1.0.0/24", rg: "rg-app" }),
+    node(spoke + "/subnets/snet-pe", "snet-pe", "subnet", "subnet", spoke, { prefix: "10.1.1.0/24", rg: "rg-app" }),
+    node(vm, "vm-app-01", "microsoft.compute/virtualmachines", "compute", rg("rg-app"), { sku: "Standard_D4s_v5", rg: "rg-app", tags: { env: "prod" } }),
+    node(r("rg-app", "microsoft.network/networkinterfaces", "nic-vm-app-01"), "nic-vm-app-01", "microsoft.network/networkinterfaces", "network", rg("rg-app"), { rg: "rg-app" }),
+    node(r("rg-app", "microsoft.compute/disks", "vm-app-01-os"), "vm-app-01-os", "microsoft.compute/disks", "compute", rg("rg-app"), { sku: "Premium_LRS", rg: "rg-app" }),
+    node(r("rg-app", "microsoft.network/networksecuritygroups", "nsg-vm"), "nsg-vm", "microsoft.network/networksecuritygroups", "network", rg("rg-app"), { rg: "rg-app" }),
+    node(st, "stappdemo", "microsoft.storage/storageaccounts", "data", rg("rg-app"), { sku: "Standard_ZRS", rg: "rg-app" }),
+    node(r("rg-app", "microsoft.network/privateendpoints", "pe-stappdemo-blob"), "pe-stappdemo-blob", "microsoft.network/privateendpoints", "network", rg("rg-app"), { rg: "rg-app" }),
+  ];
+  const e = (s, t, rel) => ({ s, t, rel });
+  const edges = [
+    e(hub, spoke, "peered"),
+    e(r("rg-hub", "microsoft.network/azurefirewalls", "afw-hub"), hub + "/subnets/azurefirewallsubnet", "in subnet"),
+    e(r("rg-hub", "microsoft.network/publicipaddresses", "pip-afw"), r("rg-hub", "microsoft.network/azurefirewalls", "afw-hub"), "public IP of"),
+    e(r("rg-app", "microsoft.network/networkinterfaces", "nic-vm-app-01"), vm, "NIC of"),
+    e(r("rg-app", "microsoft.network/networkinterfaces", "nic-vm-app-01"), spoke + "/subnets/snet-vm", "in subnet"),
+    e(r("rg-app", "microsoft.compute/disks", "vm-app-01-os"), vm, "disk of"),
+    e(r("rg-app", "microsoft.network/networksecuritygroups", "nsg-vm"), spoke + "/subnets/snet-vm", "protects"),
+    e(r("rg-app", "microsoft.network/privateendpoints", "pe-stappdemo-blob"), spoke + "/subnets/snet-pe", "in subnet"),
+    e(r("rg-app", "microsoft.network/privateendpoints", "pe-stappdemo-blob"), st, "private link to"),
+  ];
+  const access = {
+    principals: [
+      { id: "u1", name: "Alex Admin", upn: "alex@demo.example", kind: "user" }, { id: "u2", name: "Robin Ops", upn: "robin@demo.example", kind: "user" },
+      { id: "u3", name: "Sam Dev", upn: "sam@demo.example", kind: "user" }, { id: "g1", name: "grp-platform-admins", kind: "group" },
+      { id: "sp1", name: "sp-pipeline-deploy", kind: "sp" }, { id: "x1", name: "Pat Partner", upn: "pat_partner.example#EXT#@demo.example", kind: "user", guest: true }],
+    azure: [
+      { p: "g1", role: "Owner", priv: true, scope: "mg:platform" }, { p: "u1", role: "User Access Administrator", priv: true, scope: "tenant" },
+      { p: "sp1", role: "Contributor", priv: true, scope: sid }, { p: "u3", role: "Reader", priv: false, scope: rg("rg-app") },
+      { p: "u3", role: "Virtual Machine Contributor", priv: false, scope: vm }, { p: "x1", role: "Reader", priv: false, scope: sid },
+      { p: "u2", role: "Contributor", priv: true, scope: sid, status: "eligible", until: soon(30) }],
+    entra: [{ p: "u1", role: "Global Administrator", priv: true, status: "active", scope: "/" },
+      { p: "u2", role: "Security Administrator", priv: true, status: "eligible", scope: "/" }, { p: "g1", role: "Security Reader", priv: false, status: "active", scope: "/" }],
+    members: { g1: ["u1", "u2"] },
+    policies: [
+      { id: "p1", name: "Microsoft cloud security benchmark", scope: "tenant", initiative: true, enforce: "DoNotEnforce", nonCompliant: { [S]: 7 } },
+      { id: "p2", name: "Allowed locations", scope: "mg:landingzones", initiative: false, enforce: "Default", nonCompliant: null },
+      { id: "p3", name: "Require Owner tag on resource groups", scope: sid, initiative: false, enforce: "Default", nonCompliant: { [S]: 1 } }],
+    ca: [{ name: "Require MFA for admins", state: "enabled" }, { name: "Block legacy authentication", state: "enabledForReportingButNotEnforced" }],
+    packages: [{ id: "k1", name: "Azure platform admins", catalog: "Azure platform", groups: ["g1"] }],
+    packageAssignments: [{ p: "u1", pkg: "k1", until: soon(90) }, { p: "u2", pkg: "k1", until: soon(10) }],
+    packageRequests: [{ p: "u3", pkg: "k1", created: soon(-1) }],
+    groupEligible: [{ g: "g1", p: "u3", until: soon(60) }]
+  };
+  return { meta: { title: "Rootline", generated: new Date().toISOString(), scope: "demo", tenantName: "Demo Tenant", demo: true, entra: true, warnings: [] }, nodes, edges, access };
+}
+</script>
+</body>
+</html>

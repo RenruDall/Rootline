@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Rootline for Windows: WPF + WebView2 window, Microsoft sign-in (MSAL with the Windows account broker).
+       Runs on .NET Framework 4.8, which is part of Windows 10/11, so nothing else needs installing.
+       Build: dotnet build src/Rootline.App/Rootline.App.csproj -c Release -p:Version=1.0.0 -p:RootlineClientId=<app id> -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>Rootline</AssemblyName>
+    <RootNamespace>Rootline.App</RootNamespace>
+    <StartupObject>Rootline.App.Program</StartupObject>
+    <ApplicationIcon>rootline.ico</ApplicationIcon>
+    <PlatformTarget>x64</PlatformTarget>
+    <Version>0.0.0</Version>
+    <Product>Rootline</Product>
+    <AssemblyTitle>Rootline</AssemblyTitle>
+    <Description>Rootline — Azure and Entra landscape (read-only)</Description>
+    <Company>Michael Ladurner</Company>
+    <Copyright>© 2026 Michael Ladurner · MIT License</Copyright>
+    <!-- The Rootline app registration (multi-tenant, public client). Set at build time; people can also enter their own. -->
+    <RootlineClientId Condition="'$(RootlineClientId)' == ''"></RootlineClientId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DefaultClientId</_Parameter1>
+      <_Parameter2>$(RootlineClientId)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.*" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.*" />
+    <PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.*" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rootline.Core\Rootline.Core.csproj" />
+    <Reference Include="System.Net.Http" />
+    <EmbeddedResource Include="..\..\rootline.template.html" LogicalName="rootline.template.html" />
+    <EmbeddedResource Include="..\..\lib\cytoscape.min.js" LogicalName="cytoscape.min.js" />
+    <EmbeddedResource Include="rootline.ico" LogicalName="rootline.ico" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,76 @@
+name: Build Rootline
+
+# Push a tag like v1.0.0 to test, build and publish Rootline as a GitHub Release.
+# "Run workflow" on the Actions tab builds a test copy (download it from the run's artifacts).
+# Optional repository variable ROOTLINE_CLIENT_ID: the app (client) ID of your Rootline app registration,
+# built into the app so people don't have to enter it.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Test against a fake Azure + Entra tenant
+        shell: pwsh
+        run: |
+          python tests/fake_tenant.py tests/out
+          ./tests/Test-Rootline.ps1
+
+      - name: Build
+        shell: pwsh
+        run: |
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.0.0' }
+          "VERSION=$version" | Out-File $env:GITHUB_ENV -Append
+          dotnet build src/Rootline.App/Rootline.App.csproj -c Release "-p:Version=$version" "-p:RootlineClientId=${{ vars.ROOTLINE_CLIENT_ID }}"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Get-ChildItem src/Rootline.App/bin/Release/net48 -Recurse -File | Select-Object -First 40 | Format-Table Length, FullName -AutoSize
+
+      - name: Check the app
+        shell: powershell   # Windows PowerShell (.NET Framework) loads the net48 app natively
+        run: |
+          $exe = (Resolve-Path src/Rootline.App/bin/Release/net48/Rootline.exe).Path
+          $asm = [System.Reflection.Assembly]::LoadFile($exe)
+          $names = $asm.GetManifestResourceNames()
+          foreach ($r in 'rootline.template.html', 'cytoscape.min.js', 'rootline.ico') { if ($r -notin $names) { throw "Not embedded: $r" } }
+          $dir = Split-Path $exe
+          foreach ($f in 'Rootline.Core.dll', 'Microsoft.Identity.Client.dll', 'Microsoft.Identity.Client.Broker.dll', 'Microsoft.Web.WebView2.Wpf.dll', 'System.Text.Json.dll') {
+            if (-not (Test-Path (Join-Path $dir $f))) { throw "Missing $f" }
+          }
+          if (-not (Get-ChildItem $dir -Recurse -Filter WebView2Loader.dll)) { throw 'Missing WebView2Loader.dll' }
+          if (-not (Get-ChildItem $dir -Recurse -Filter 'msalruntime*.dll')) { throw 'Missing msalruntime (Windows sign-in broker)' }
+          "Version: $((Get-Item $exe).VersionInfo.ProductVersion)"
+          "Built-in app ID: " + $(if ('${{ vars.ROOTLINE_CLIENT_ID }}') { 'yes' } else { 'no (people enter it at sign-in)' })
+
+      - name: Installer and portable zip
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress | Out-Null
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$env:VERSION" installer\Rootline.iss
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Compress-Archive -Path src/Rootline.App/bin/Release/net48/*, LICENSE, THIRD-PARTY-NOTICES.txt -DestinationPath "dist/Rootline-portable-$env:VERSION.zip"
+          Get-ChildItem dist -File | ForEach-Object { "$((Get-FileHash $.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($.Name)" } | Set-Content dist/SHA256SUMS.txt -Encoding ascii
+          Get-Content dist/SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Rootline
+          path: dist/
+
+      - name: Publish release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

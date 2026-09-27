@@ -48,6 +48,7 @@ az deployment group create -g <resource-group> -f main.bicep
 Rootline is a Windows app that shows your tenant as one picture:
 **who has which rights, where subscriptions land, which policies apply, and what's deployed and connected.**
 Install it, sign in with your work account (MFA as usual), click **Scan now**. It only reads, and everything stays on your PC.
+**Rootline Portable:** Contains a portable version without installer. 
 
 ### Five views
 - **Mind map** — tenant root → management groups (including empty landing zones) → subscriptions → resource groups → resources.

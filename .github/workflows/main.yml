@@ -60,7 +60,8 @@ jobs:
           & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$env:VERSION" installer\Rootline.iss
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           Compress-Archive -Path src/Rootline.App/bin/Release/net48/*, LICENSE, THIRD-PARTY-NOTICES.txt -DestinationPath "dist/Rootline-portable-$env:VERSION.zip"
-          Get-ChildItem dist -File | ForEach-Object { "$((Get-FileHash $.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($.Name)" } | Set-Content dist/SHA256SUMS.txt -Encoding ascii
+          	  $sums = foreach ($f in Get-ChildItem dist -File) { (Get-FileHash $f.FullName -Algorithm SHA256).Hash.ToLowerInvariant() + '  ' + $f.Name }
+          $sums | Set-Content dist/SHA256SUMS.txt -Encoding ascii
           Get-Content dist/SHA256SUMS.txt
 
       - uses: actions/upload-artifact@v4

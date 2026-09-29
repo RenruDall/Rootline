@@ -1,4 +1,4 @@
-# Rootline — for Azure
+# Rootline - for Azure
 
 See your whole Microsoft cloud from the tenant root down: who can do what, where, and why.
 Two read-only tools:

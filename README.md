@@ -1,4 +1,4 @@
-# Rootline — for Azure
+# Rootline - for Azure
 
 See your whole Microsoft cloud from the tenant root down: who can do what, where, and why.
 Two read-only tools:
@@ -7,6 +7,8 @@ Two read-only tools:
   management groups and landing zones, policies, resources and how they connect. [Jump to Rootline](#rootline--desktop-app-for-the-whole-entra--azure-landscape)
 - **Rootline Inventory workbook** — an Azure Monitor workbook that inventories resources with Azure Resource Graph,
   right in the portal. Every grid can be filtered and exported to Excel.
+
+  <img width="2000" height="1125" alt="Rootline 1" src="https://github.com/user-attachments/assets/d944c5d0-d9da-4767-95f6-93f82b281cbe" />
 
 > Independent open-source project. Not affiliated with or endorsed by Microsoft.
 > "Azure" is a trademark of Microsoft Corporation.
@@ -22,6 +24,8 @@ Two read-only tools:
 | Storage & data | Storage accounts (TLS, public access, HNS), key vaults, SQL servers/databases, other data and messaging services |
 | Tags | Coverage per tag key, tag values, untagged resources |
 | Subscriptions & RGs | Subscriptions with parent management group, resource groups with resource counts |
+
+<img width="2000" height="1125" alt="Rootline Connections" src="https://github.com/user-attachments/assets/9b658d43-01f2-4457-a9fb-ae657708c982" />
 
 Scope filters apply to every tab: **subscriptions, resource groups, locations, tag name / value**.
 
@@ -49,6 +53,8 @@ Rootline is a Windows app that shows your tenant as one picture:
 **who has which rights, where subscriptions land, which policies apply, and what's deployed and connected.**
 Install it, sign in with your work account (MFA as usual), click **Scan now**. It only reads, and everything stays on your PC.
 
+<img width="2000" height="1125" alt="Rootline Topology" src="https://github.com/user-attachments/assets/ec9d4d1a-a46b-404d-9d20-a1fffd85bd90" />
+
 ### Five views
 - **Mind map** — tenant root → management groups (including empty landing zones) → subscriptions → resource groups → resources.
   Click any scope to see its **landing-zone path**, **who has access there** (assigned or inherited) and **which policies apply**
@@ -70,6 +76,8 @@ Install it, sign in with your work account (MFA as usual), click **Scan now**. I
 - **Changes** — compares any two scans: who gained or lost access (roles, group membership, access packages),
   moved subscriptions, new or removed resources and connections, policy and enforcement changes.
 
+
+
 ### Install
 1. Download **`Rootline-Setup-<version>.exe`** from the latest release.
 2. Run it. It installs for your user only (no admin rights) and adds **Rootline** to the Start menu.
@@ -88,6 +96,9 @@ On *Findings*, **Save audit report** writes one printable page (print it to PDF 
 all findings, the **privileged access register** (everyone who can change resources or holds an admin role, and how
 they got it), access packages, policies with compliance, Conditional Access, the changes since the compared scan and
 the scan notes. **Export access (CSV)** lists everyone's access, one row per identity, role and scope, for Excel.
+
+<img width="2000" height="1125" alt="Rootline Governance" src="https://github.com/user-attachments/assets/d72f0284-2109-4816-b91c-a2b80984b164" />
+
 
 ### Permissions
 - **Azure:** your account needs *Reader* on the management groups or subscriptions you want to see

@@ -1,4 +1,4 @@
-# Rootline - for Azure
+# Rootline — for Azure
 
 See your whole Microsoft cloud from the tenant root down: who can do what, where, and why.
 Two read-only tools:
@@ -47,7 +47,7 @@ az deployment group create -g <resource-group> -f main.bicep
 
 Rootline is a Windows app that shows your tenant as one picture:
 **who has which rights, where subscriptions land, which policies apply, and what's deployed and connected.**
-Install it, sign in with your work account (MFA as usual), click **Scan now**. It only reads, and everything stays on your PC.<br>
+Install it, sign in with your work account (MFA as usual), click **Scan now**. It only reads, and everything stays on your PC.
 
 ### Five views
 - **Mind map** — tenant root → management groups (including empty landing zones) → subscriptions → resource groups → resources.
@@ -137,6 +137,7 @@ Opening `rootline.template.html` directly in a browser shows a small demo tenant
 | `rootline.template.html` | The page the app shows (and saved reports use) |
 | `lib/cytoscape.min.js` | Graph library (Cytoscape.js 3.30.2, MIT — see `THIRD-PARTY-NOTICES.txt`) |
 | `installer/Rootline.iss` | Installer (Inno Setup) |
+| `LICENSE`, `NOTICE` | Apache License 2.0 and the attribution notice to keep when redistributing |
 | `tests/` | Fake Azure + Entra tenant served over HTTP, and the round-trip test |
 | `.github/workflows/main.yml` | Tests, builds and publishes releases |
 | `rootline-inventory.workbook.json`, `main.bicep` | The Azure Monitor workbook |
@@ -191,4 +192,6 @@ Query patterns follow the public [Azure Resource Graph documentation](https://le
 
 ## License
 
-[MIT](LICENSE) © 2026 Michael Ladurner
+Rootline is © 2026 Michael Ladurner and licensed under the [Apache License 2.0](LICENSE).
+You're free to use, change and share it, including commercially. If you redistribute it or a
+work based on it, keep the [NOTICE](NOTICE) file with it so the original author is credited, and mark the files you changed.

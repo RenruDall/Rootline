@@ -1,0 +1,13 @@
+Rootline
+Copyright 2026 Michael Ladurner
+https://github.com/RenruDall/Rootline
+
+Rootline was created by Michael Ladurner and is licensed under the Apache License,
+Version 2.0 (see LICENSE).
+
+If you redistribute Rootline or a work based on it, section 4(d) of the license requires
+you to include this NOTICE file (or its contents) with it, crediting Michael Ladurner as
+the original author of Rootline.
+
+This product includes Cytoscape.js (MIT License, Copyright The Cytoscape Consortium)
+and other third-party components listed in THIRD-PARTY-NOTICES.txt.

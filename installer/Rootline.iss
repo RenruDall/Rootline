@@ -10,7 +10,8 @@ AppName=Rootline
 AppVersion={#AppVersion}
 AppVerName=Rootline {#AppVersion}
 AppPublisher=Michael Ladurner
-AppCopyright=© 2026 Michael Ladurner · MIT License
+AppCopyright=© 2026 Michael Ladurner · Apache License 2.0
+AppPublisherURL=https://github.com/RenruDall/Rootline
 DefaultDirName={localappdata}\Programs\Rootline
 DefaultGroupName=Rootline
 DisableProgramGroupPage=yes
@@ -34,6 +35,7 @@ Name: "desktopicon"; Description: "Create a desktop icon"; Flags: unchecked
 [Files]
 Source: "..\src\Rootline.App\bin\Release\net48\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion; Excludes: "*.pdb"
 Source: "..\LICENSE"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\NOTICE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\THIRD-PARTY-NOTICES.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]

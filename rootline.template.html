@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rootline</title>
-<!-- Rootline — part of Rootline Inventory (MIT). Filled in by the Rootline app (live view and saved reports). -->
+<!-- Rootline — © 2026 Michael Ladurner, Apache License 2.0 (see LICENSE and NOTICE). https://github.com/RenruDall/Rootline -->
 <style>
 :root {
   --bg:#f5f6f8; --panel:#ffffff; --ink:#1b1f24; --mute:#5d6772; --line:#dde2e8; --chip:#eef2f7; --acc:#0a66c2;
@@ -82,6 +82,7 @@ aside a { color:var(--acc); cursor:pointer; text-decoration:none; }
 .err { background:color-mix(in srgb, var(--c-priv) 14%, transparent); border-left:3px solid var(--c-priv); padding:6px 10px; font-size:13px; }
 .warn-inline { background:var(--chip); border-left:3px solid var(--c-compute); padding:6px 10px; font-size:13px; }
 [data-ext] { color:var(--acc); cursor:pointer; text-decoration:underline; }
+.credit { margin:14px 0 0; font-size:11px; }
 .flash { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--ink); color:var(--bg); padding:8px 14px; border-radius:6px; font-size:13px; z-index:20; }
 .spin { width:22px; height:22px; border:3px solid var(--line); border-top-color:var(--acc); border-radius:50%; animation:sp 1s linear infinite; display:inline-block; vertical-align:middle; margin-right:8px; }
 @keyframes sp { to { transform:rotate(360deg); } }
@@ -289,6 +290,7 @@ const AUTO_EXPAND = resCount <= 400;
 
 // ======================================================= header
 $("title").textContent = DATA.meta.empty ? "Rootline" : `Rootline — ${tenantName}`;
+$("title").title = "Rootline · © 2026 Michael Ladurner · Apache License 2.0";
 $("meta").textContent = DATA.meta.empty ? "" :
   `${DATA.meta.demo ? "Demo data · " : ""}Scanned ${new Date(DATA.meta.generated).toLocaleString()} · ${DATA.meta.scope} · ` +
   `${resCount} resources · ${relEdges.length} connections · ${ACC.principals.length} identities`;
@@ -1248,7 +1250,7 @@ table{border-collapse:collapse;width:100%;margin:6px 0}th,td{border:1px solid #d
 </style></head><body>
 <h1>Access and governance evidence — ${esc(tenantName)}</h1>
 <p class="meta">Scan of ${esc(new Date(DATA.meta.generated).toLocaleString())} · ${esc(DATA.meta.scope || "")} · Tenant ID ${esc(DATA.meta.tenantId || "—")}<br>
-Report created ${esc(new Date().toLocaleString())} with Rootline${APP && APP.version ? " " + esc(APP.version) : ""}${APP && APP.account ? " by " + esc(APP.account) : ""}. Read-only scan; contents reflect what the scanning account could see.</p>
+Report created ${esc(new Date().toLocaleString())}${APP && APP.account ? " by " + esc(APP.account) : ""} with Rootline${APP && APP.version ? " " + esc(APP.version) : ""} (© Michael Ladurner, ${PROJECT_URL}). Read-only scan; contents reflect what the scanning account could see.</p>
 <p class="note">Confidential: this report names everyone with administrative rights. Share it only with people entitled to see that.</p>
 ${h("Summary")}${table(["Measure", "Value"], [
     ["Management groups", n("mg")], ["Subscriptions", n("sub")], ["Resources", resCount],
@@ -1305,6 +1307,8 @@ if (host) host.addEventListener("message", ev => {
   const p = pending.get(m.id); pending.delete(m.id);
   m.ok ? p.resolve(m.result) : p.reject(new Error(m.error || "Something went wrong."));
 });
+const PROJECT_URL = "https://github.com/RenruDall/Rootline";
+const CREDIT = `<p class="hint credit">Rootline${APP && APP.version && APP.version !== "0.0.0" ? " " + esc(APP.version) : ""} · © 2026 Michael Ladurner · <a data-ext="${PROJECT_URL}">Apache License 2.0</a></p>`;
 function signInCard(error) {
   overlay(`<h2>Sign in to Rootline</h2>
     <p class="hint">Use your work account. Microsoft's own sign-in window opens next: your password or passwordless sign-in,
@@ -1318,7 +1322,7 @@ function signInCard(error) {
           <input id="f-client" placeholder="00000000-0000-0000-0000-000000000000" ${APP.needsClientId ? "required" : ""}></label>
       </details>
       <p><button class="btn primary" type="submit" id="f-go">Sign in with Microsoft</button></p>
-    </form>`);
+    </form>${CREDIT}`);
   $("f-email").focus();
   $("signin").onsubmit = async ev => {
     ev.preventDefault();
@@ -1335,7 +1339,7 @@ function welcomeCard() {
   overlay(`<h2>Welcome to Rootline</h2><p>Signed in as <b>${esc(APP.account)}</b>${APP.tenantName ? ` to <b>${esc(APP.tenantName)}</b>` : ""}.</p>
     <p class="hint">A scan reads your subscriptions, resources, network, management groups, role assignments and policies${APP.entra ? ", plus Entra roles, groups and Conditional Access" : ""}.
     It's read-only, shows only what your account may see, and results stay on this PC.</p>${entraNote}
-    <p><button class="btn primary" id="w-scan">Scan now</button> <button class="btn" id="w-out">Sign out</button></p>`);
+    <p><button class="btn primary" id="w-scan">Scan now</button> <button class="btn" id="w-out">Sign out</button></p>${CREDIT}`);
   $("w-scan").onclick = () => $("scan").click();
   $("w-out").onclick = () => $("signout").click();
 }

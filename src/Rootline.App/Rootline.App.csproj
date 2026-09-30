@@ -18,7 +18,7 @@
     <AssemblyTitle>Rootline</AssemblyTitle>
     <Description>Rootline — Azure and Entra landscape (read-only)</Description>
     <Company>Michael Ladurner</Company>
-    <Copyright>© 2026 Michael Ladurner · MIT License</Copyright>
+    <Copyright>© 2026 Michael Ladurner · Apache License 2.0</Copyright>
     <!-- The Rootline app registration (multi-tenant, public client). Set at build time; people can also enter their own. -->
     <RootlineClientId Condition="'$(RootlineClientId)' == ''"></RootlineClientId>
   </PropertyGroup>
